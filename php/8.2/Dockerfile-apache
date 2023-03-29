@@ -1,5 +1,6 @@
 FROM php:8.2.4-apache-bullseye
 LABEL maintainer="Christian WALDBILLIG <christian@waldbillig.io>"
+LABEL org.opencontainers.image.source="https://github.com/chrecht/docker-library"
 
 ENV TERM="xterm" \
     LANG="C.UTF-8" \
@@ -126,7 +127,7 @@ RUN mkdir -p /usr/src/php/ext \
     && docker-php-ext-install -j$(nproc) redis \
     && rm -rf /usr/src/php/ext
 
-COPY scripts /scripts
+COPY scripts/* /scripts/
 COPY php/conf.d/* /usr/local/etc/php/conf.d/
 COPY apache2/mods-enabled/* /etc/apache2/mods-enabled/
 COPY apache2/conf-enabled/* /etc/apache2/conf-enabled/

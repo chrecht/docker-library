@@ -11,12 +11,13 @@ services:
 
   apache:
     platform: "linux/amd64"
+    image: "ghcr.io/chrecht/docker-library/php:8-apache"
     build:
       context: .
       dockerfile: Dockerfile-apache
       tags:
-        - "ghcr.io/chrecht/php:8.2-apache"
-        - "ghcr.io/chrecht/php:8.2.4-apache"
+        - "ghcr.io/chrecht/docker-library/php:8.2-apache"
+        - "ghcr.io/chrecht/docker-library/php:8.2.4-apache"
     environment:
       DEBUG: dev
     ports:
@@ -32,5 +33,16 @@ services:
       DEBUG: dev
     ports:
       - "9000:9000"
+    volumes:
+      - ./test/html:/var/www/html
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile-test
+    environment:
+      DEBUG: dev
+    ports:
+      - "1180:80"
     volumes:
       - ./test/html:/var/www/html
