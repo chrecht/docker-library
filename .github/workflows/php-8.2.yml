@@ -3,7 +3,7 @@ name: Build & Push
 on:
   push:
     tags:
-      - "php-v*"
+      - "php-*"
   # pull_request:
   #   branches:
   #     - "main"
