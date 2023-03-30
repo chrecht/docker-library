@@ -3,17 +3,18 @@ name: Build & Push
 on:
   push:
     tags:
-      - "php-v*"
+      - "php-v*.*.*"
   # pull_request:
   #   branches:
   #     - "main"
 
 jobs:
-  deploy-docker-hello-world:
+  build-and-push-php:
+
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Docker meta
         id: meta
@@ -22,9 +23,11 @@ jobs:
           images: ghcr.io/chrecht/docker-library/php
           flavor: latest=true
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
+            type=schedule
             type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
 
       - name: Login to image repository
         if: github.ref_type == 'tag'
@@ -35,7 +38,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: ./php/8.2/
           file: ./php/8.2/Dockerfile-apache
