@@ -3,31 +3,36 @@ name: Build & Push
 on:
   push:
     tags:
-      - "php-v*.*.*"
+      - "php-v*"
   # pull_request:
   #   branches:
   #     - "main"
 
 jobs:
-  build-and-push-php:
+
+  docker-apache:
 
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: ghcr.io/chrecht/docker-library/php
-          flavor: latest=true
+          flavor: |
+            latest=auto
+            prefix=php-,onlatest=false
+            suffix=apache
           tags: |
-            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
 
       - name: Login to image repository
         if: github.ref_type == 'tag'
@@ -42,6 +47,6 @@ jobs:
         with:
           context: ./php/8.2/
           file: ./php/8.2/Dockerfile-apache
-          push: ${{ github.ref_type == 'tag' }}
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
