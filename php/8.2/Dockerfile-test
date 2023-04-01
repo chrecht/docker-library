@@ -1,5 +1,0 @@
-FROM ghcr.io/chrecht/docker-library/php:8-apache
-
-USER root
-RUN /scripts/dev.sh
-USER site
