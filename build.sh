@@ -29,5 +29,6 @@ for i in "${!REGISTRY[@]}"
 do
     
     buildAndPush ./php/8.2/Dockerfile-apache ./php/8.2/ apache 8.2 4
+	buildAndPush ./php/8.2/Dockerfile-cli ./php/8.2/ cli 8.2 4
 
 done

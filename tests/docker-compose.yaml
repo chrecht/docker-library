@@ -13,3 +13,14 @@ services:
       - "1180:80"
     volumes:
       - ./html:/var/www/html
+
+  test-cli:
+    build:
+      context: .
+      dockerfile: Dockerfile-test-cli
+      target: test
+    command: ['-f', '/var/www/html/index.php']
+    environment:
+      DEBUG: dev
+    volumes:
+      - ./html:/var/www/html
