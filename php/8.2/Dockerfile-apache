@@ -56,7 +56,7 @@ RUN apt-get update \
         php-odbc \
         php-rdkafka \
         php-yaml \
-        php-memcache \
+        php-memcached \
         libapache2-mod-php8.2 \
         apache2 \
     && apt-get autoremove -y \
@@ -115,7 +115,7 @@ COPY apache2/mods-enabled/* /etc/apache2/mods-enabled/
 COPY apache2/conf-enabled/* /etc/apache2/conf-enabled/
 COPY apache2/sites-enabled/* /etc/apache2/sites-enabled/
 
-RUN a2enmod remoteip
+RUN a2enmod remoteip rewrite
 
 ## allow apache to use port 80
 RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2
