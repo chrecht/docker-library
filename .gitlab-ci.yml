@@ -5,7 +5,7 @@ services:
     alias: dockerdaemon
 
 stages: 
-  - build
+  - test
 
 variables:
   DOCKER_HOST: tcp://dockerdaemon:2375/
@@ -28,3 +28,11 @@ build-8.2:
           -f ./php/8.2/Dockerfile-apache ./php/8.2
     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
+
+test:
+  stage: test
+  image:
+    name: bitnami/kubectl:latest
+  script:
+    - "kubectl config get-contexts"
+    - "kubectl get pods -A"
