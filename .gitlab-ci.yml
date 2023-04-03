@@ -18,9 +18,9 @@ before_script:
 build-8.2:
   stage: build
   script:
-    - "[ -f ./php/8.2/version_major) ] && export MAJOR=$(cat ./php/8.2/version_major)"
-    - "[ -f ./php/8.2/version_minor) ] && export MINOR=$(cat ./php/8.2/version_minor)"
-    - "[ -f ./php/8.2/version_variant) ] && export VARIANT=$(cat ./php/8.2/version_variant)"
+    - "[ -f ./php/8.2/version_major ] && export MAJOR=$(cat ./php/8.2/version_major)"
+    - "[ -f ./php/8.2/version_minor ] && export MINOR=$(cat ./php/8.2/version_minor)"
+    - "[ -f ./php/8.2/version_variant ] && export VARIANT=$(cat ./php/8.2/version_variant)"
     - docker build --platform=linux/amd64 --pull -t $CI_REGISTRY_IMAGE/php:$MAJOR:$MINOR-$VARIANT -f ./php/8.2/Dockerfile-apache ./php/8.2
     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR:$MINOR-$VARIANT
     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
