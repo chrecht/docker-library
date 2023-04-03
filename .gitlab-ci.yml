@@ -20,5 +20,5 @@ before_script:
 build:
   stage: build
   script:
-    - docker build --platform=linux/amd64 --pull -t $CONTAINER_TEST_IMAGE ./php/8.2/Dockerfile-apache
+    - docker build --platform=linux/amd64 --pull -t $CONTAINER_TEST_IMAGE -f ./php/8.2/Dockerfile-apache ./php/8.2
     - docker push $CONTAINER_TEST_IMAGE
