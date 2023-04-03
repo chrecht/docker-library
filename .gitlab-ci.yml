@@ -5,7 +5,7 @@ services:
     alias: dockerdaemon
 
 stages: 
-  - build-8.2
+  - build
 
 variables:
   DOCKER_HOST: tcp://dockerdaemon:2375/
