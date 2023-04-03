@@ -35,6 +35,6 @@ test:
     name: bitnami/kubectl:latest
     entrypoint: [""]
   script:
-    - kubectl config set-context "$KUBE_CONTEXT" --cluster=gitlab --user="agent:${AGENT_ID}"
-    - kubectl config use-context "$KUBE_CONTEXT"
+    - kubectl config get-contexts
+    - kubectl config use-context containers/docker-library:elastic-observability01
     - kubectl get pods -A
