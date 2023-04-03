@@ -35,5 +35,6 @@ test:
     name: bitnami/kubectl:latest
     entrypoint: [""]
   script:
-    - "kubectl config get-contexts"
-    - "kubectl get pods -A"
+    - kubectl config set-context "$KUBE_CONTEXT" --cluster=gitlab --user="agent:${AGENT_ID}"
+    - kubectl config use-context "$KUBE_CONTEXT"
+    - kubectl get pods -A
