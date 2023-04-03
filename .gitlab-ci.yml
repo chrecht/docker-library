@@ -33,6 +33,7 @@ test:
   stage: test
   image:
     name: bitnami/kubectl:latest
+    entrypoint: [""]
   script:
     - "kubectl config get-contexts"
     - "kubectl get pods -A"
