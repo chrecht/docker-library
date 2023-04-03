@@ -37,3 +37,5 @@ test:
   script:
     - kubectl config use-context $KUBE_CONTEXT
     - kubectl get pods -A
+    - kubectl get nodes -o wide
+
