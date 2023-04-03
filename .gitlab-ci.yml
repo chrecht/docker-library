@@ -35,6 +35,5 @@ test:
     name: bitnami/kubectl:latest
     entrypoint: [""]
   script:
-    - kubectl config get-contexts
-    - kubectl config use-context containers/docker-library:elastic-observability01
+    - kubectl config use-context $KUBE_CONTEXT
     - kubectl get pods -A
