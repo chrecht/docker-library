@@ -21,6 +21,6 @@ build-8.2:
     - "[ -f ./version ] && export MAJOR=$(cat ./php/8.2/version_major)"
     - "[ -f ./version ] && export MINOR=$(cat ./php/8.2/version_minor)"
     - "[ -f ./version ] && export VARIANT=$(cat ./php/8.2/version_variant)"
-    - docker build --platform=linux/amd64 --pull -t $CONTAINER_TEST_IMAGE -f ./php/8.2/Dockerfile-apache ./php/8.2
+    - docker build --platform=linux/amd64 --pull -t $CI_REGISTRY_IMAGE/php:$MAJOR:$MINOR-$VARIANT -f ./php/8.2/Dockerfile-apache ./php/8.2
     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR:$MINOR-$VARIANT
     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
