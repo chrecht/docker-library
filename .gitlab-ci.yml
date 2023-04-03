@@ -5,20 +5,22 @@ services:
     alias: dockerdaemon
 
 stages: 
-  - build
+  - build-8.2
 
 variables:
   DOCKER_HOST: tcp://dockerdaemon:2375/
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
-  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
 before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-build:
+build-8.2:
   stage: build
   script:
+    - "[ -f ./version ] && export MAJOR=$(cat ./php/8.2/version_major)"
+    - "[ -f ./version ] && export MINOR=$(cat ./php/8.2/version_minor)"
+    - "[ -f ./version ] && export VARIANT=$(cat ./php/8.2/version_variant)"
     - docker build --platform=linux/amd64 --pull -t $CONTAINER_TEST_IMAGE -f ./php/8.2/Dockerfile-apache ./php/8.2
-    - docker push $CONTAINER_TEST_IMAGE
+    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR:$MINOR-$VARIANT
+    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
