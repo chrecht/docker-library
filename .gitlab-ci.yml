@@ -1,4 +1,4 @@
-image: docker:stable
+image: debian:latest
 
 services:
   - name: docker:dind
@@ -21,7 +21,6 @@ before_script:
 
 scheduled-docker-build:
   stage: build
-  image: debian:latest
   script:
     - 'apt update && apt install curl jq git -y'
     - ./check-version-and-create-tag.sh
