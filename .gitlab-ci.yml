@@ -25,7 +25,7 @@ build-8.2-apache:
         docker build --platform=linux/amd64 --pull \
           -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
           -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
-          -f ./php/8.2/apache/Dockerfile-apache ./php/8.2/apache
+          -f ./php/8.2/apache/Dockerfile ./php/8.2/apache
     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
 
@@ -39,7 +39,7 @@ build-8.2-cli:
         docker build --platform=linux/amd64 --pull \
           -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
           -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
-          -f ./php/8.2/cli/Dockerfile-cli ./php/8.2/cli
+          -f ./php/8.2/cli/Dockerfile ./php/8.2/cli
     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
 
