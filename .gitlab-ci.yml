@@ -19,10 +19,22 @@ before_script:
     export MINOR=$(curl --silent https://packages.sury.org/php/dists/bullseye/main/binary-amd64/Packages | grep "Package: php8.2-cli$" -A 5 | grep Version | sed -En  's/^Version: [0-9]+\.[0-9]+\.([0-9]+).*/\1/p')
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
+scheduled-docker-build:
+  stage: build
+  image: debian:latest
+  script:
+    - 'apt update && apt install curl jq git -y'
+    - ./check-version-and-create-tag.sh
+#  rules:
+#    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_REF_PROTECTED
+
+
 build-8.2-apache:
   stage: build
   variables:
     VARIANT: apache
+  only:
+    - tags
   cache:
     key: $MAJOR.$MINOR-$VARIANT
   script:
@@ -36,6 +48,8 @@ build-8.2-apache:
 
 build-8.2-cli:
   stage: build
+  only:
+    - tags
   variables:
     VARIANT: cli
   cache:
