@@ -23,29 +23,31 @@ build-8.2-apache:
   stage: build
   variables:
     VARIANT: apache
+  cache:
+    key: $MAJOR.$MINOR-$VARIANT
   script:
-    - "echo $MAJOR - $MINOR - $VARIANT"
-    # - |
-    #     docker build --platform=linux/amd64 --pull \
-    #       -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
-    #       -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
-    #       -f ./php/8.2/apache/Dockerfile ./php/8.2/apache
-    # - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
-    # - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
+    - |
+        docker build --platform=linux/amd64 --pull \
+          -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
+          -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
+          -f ./php/8.2/apache/Dockerfile ./php/8.2/apache
+    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
+    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
 
-# build-8.2-cli:
-#   stage: build
-#   script:
-#     - "[ -f ./php/8.2/cli/.version_major ] && export MAJOR=$(cat ./php/8.2/cli/.version_major)"
-#     - "[ -f ./php/8.2/cli/.version_minor ] && export MINOR=$(cat ./php/8.2/cli/.version_minor)"
-#     - "[ -f ./php/8.2/cli/.version_variant ] && export VARIANT=$(cat ./php/8.2/cli/.version_variant)"
-#     - |
-#         docker build --platform=linux/amd64 --pull \
-#           -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
-#           -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
-#           -f ./php/8.2/cli/Dockerfile ./php/8.2/cli
-#     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
-#     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
+build-8.2-cli:
+  stage: build
+  variables:
+    VARIANT: cli
+  cache:
+    key: $MAJOR.$MINOR-$VARIANT
+  script:
+    - |
+        docker build --platform=linux/amd64 --pull \
+          -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
+          -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
+          -f ./php/8.2/cli/Dockerfile ./php/8.2/cli
+    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
+    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
 
 
 # # test:
