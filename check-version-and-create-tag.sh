@@ -41,7 +41,7 @@ else
 EOF
 
     git tag -a $MAJOR.$MINOR -m "Version created by gitlab-ci Build"
-    git push origin $MAJOR.$MINOR
+    git push api-origin $MAJOR.$MINOR
 
 fi
 
