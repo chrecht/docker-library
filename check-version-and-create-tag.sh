@@ -25,8 +25,8 @@ else
     echo ${latest} > .current
     cat .current
 
-    BRANCH_NAME="update-${CI_PROJECT_NAME}-${CI_PIPELINE_ID}"
-    git checkout -b "${BRANCH_NAME}"
+    #BRANCH_NAME="update-${CI_PROJECT_NAME}-${CI_PIPELINE_ID}"
+    #git checkout -b "${BRANCH_NAME}"
     git config user.email "${GITLAB_USER_EMAIL}"
     git config user.name "${GITLAB_USER_NAME}"
 
