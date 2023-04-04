@@ -26,6 +26,9 @@ else
 
     BRANCH_NAME="update-${CI_PROJECT_NAME}-${CI_PIPELINE_ID}"
     git checkout -b "${BRANCH_NAME}"
+    git config user.email "${GITLAB_USER_EMAIL}"
+    git config user.name "${GITLAB_USER_NAME}"
+    
     git add .current
     git commit -F - <<EOF
     Bump PHP version to ${latest}
@@ -33,8 +36,6 @@ else
     https://www.php.net/ChangeLog-8.php#${latest}
 EOF
 
-    git config user.email "${GITLAB_USER_EMAIL}"
-    git config user.name "${GITLAB_USER_NAME}"
     git remote remove origin
     git remote add origin git@${CI_SERVER_HOST}:$CI_PROJECT_PATH.git
     git tag -a $MAJOR.$MINOR -m "Version created by gitlab-ci Build"
