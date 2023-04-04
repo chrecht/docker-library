@@ -22,9 +22,7 @@ if is_latest; then
     echo "Already lastest version; nothing to do."
 else
 
-    git remote remove origin
-    git remote add origin https://oauth2:${GITLAB_ACCESS_TOKEN}@gitlab.waldbillig.io/containers/docker-library.git
-    git pull origin main
+    git remote add api-origin https://oauth2:${GITLAB_ACCESS_TOKEN}@gitlab.waldbillig.io/containers/docker-library.git
     git pull --tags
 
     echo ${latest} > .current
