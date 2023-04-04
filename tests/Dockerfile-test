@@ -4,5 +4,5 @@ FROM base as prod
 
 FROM base as test
 USER root
-RUN /scripts/dev.sh
+RUN dev.sh
 USER site

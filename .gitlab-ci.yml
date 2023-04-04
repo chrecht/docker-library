@@ -5,37 +5,52 @@ services:
     alias: dockerdaemon
 
 stages: 
-  - test
+  - build
 
 variables:
   DOCKER_HOST: tcp://dockerdaemon:2375/
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
 
-# before_script:
-#   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-# build-8.2:
-#   stage: build
-#   script:
-#     - "[ -f ./php/8.2/.version_major ] && export MAJOR=$(cat ./php/8.2/.version_major)"
-#     - "[ -f ./php/8.2/.version_minor ] && export MINOR=$(cat ./php/8.2/.version_minor)"
-#     - "[ -f ./php/8.2/.version_variant ] && export VARIANT=$(cat ./php/8.2/.version_variant)"
-#     - |
-#         docker build --platform=linux/amd64 --pull \
-#           -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
-#           -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
-#           -f ./php/8.2/Dockerfile-apache ./php/8.2
-#     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
-#     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
-
-test:
-  stage: test
-  image:
-    name: bitnami/kubectl:latest
-    entrypoint: [""]
+build-8.2-apache:
+  stage: build
   script:
-    - kubectl config use-context $KUBE_CONTEXT
-    - kubectl get pods -A
-    - kubectl get nodes -o wide
+    - "[ -f ./php/8.2/apache/.version_major ] && export MAJOR=$(cat ./php/8.2/apache/.version_major)"
+    - "[ -f ./php/8.2/apache/.version_minor ] && export MINOR=$(cat ./php/8.2/apache/.version_minor)"
+    - "[ -f ./php/8.2/apache/.version_variant ] && export VARIANT=$(cat ./php/8.2/apache/.version_variant)"
+    - |
+        docker build --platform=linux/amd64 --pull \
+          -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
+          -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
+          -f ./php/8.2/apache/Dockerfile-apache ./php/8.2/apache
+    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
+    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
+
+build-8.2-cli:
+  stage: build
+  script:
+    - "[ -f ./php/8.2/cli/.version_major ] && export MAJOR=$(cat ./php/8.2/cli/.version_major)"
+    - "[ -f ./php/8.2/cli/.version_minor ] && export MINOR=$(cat ./php/8.2/cli/.version_minor)"
+    - "[ -f ./php/8.2/cli/.version_variant ] && export VARIANT=$(cat ./php/8.2/cli/.version_variant)"
+    - |
+        docker build --platform=linux/amd64 --pull \
+          -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
+          -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
+          -f ./php/8.2/cli/Dockerfile-cli ./php/8.2/cli
+    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
+    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
+
+
+# test:
+#   stage: test
+#   image:
+#     name: bitnami/kubectl:latest
+#     entrypoint: [""]
+#   script:
+#     - kubectl config use-context $KUBE_CONTEXT
+#     - kubectl get pods -A
+#     - kubectl get nodes -o wide
 

@@ -6,9 +6,7 @@ LABEL org.opencontainers.image.source="https://github.com/chrecht/docker-library
 ENV TERM="xterm" \
     LANG="C.UTF-8" \
     LC_ALL="C.UTF-8" \
-    ACCEPT_EULA="Y" \
-    APACHE_RUN_USER="site" \
-    APACHE_RUN_GROUP="site"
+    ACCEPT_EULA="Y"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -31,7 +29,6 @@ RUN apt-get update \
     && curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg \
     && sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
     && apt-get update \
-    && dpkg -l | grep php | tee packages.txt \
     && apt-get install -y \
         php8.2-intl \
         php8.2-gd \
@@ -57,8 +54,6 @@ RUN apt-get update \
         php-rdkafka \
         php-yaml \
         php-memcached \
-        libapache2-mod-php8.2 \
-        apache2 \
     && apt-get autoremove -y \
     && apt-get autoclean \
     && apt-get clean \
@@ -101,26 +96,10 @@ RUN pecl install sqlsrv pdo_sqlsrv \
     && phpdismod -v 8.2 xdebug
 
 
-RUN ln -sfT /dev/stderr "/var/log/apache2/error.log"; \
-	ln -sfT /dev/stdout "/var/log/apache2/access.log"; \
-	ln -sfT /dev/stdout "/var/log/apache2/other_vhosts_access.log"; \
-	chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "/var/log/apache2"; \
-    chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "/var/run/apache2"; \
-    a2dismod mpm_event && a2enmod mpm_prefork
-
-COPY run-cmd.sh /usr/local/bin/
-COPY scripts/* /scripts/
-COPY php/conf.d/* /etc/php/8.2/apache2/conf.d/
-COPY apache2/mods-enabled/* /etc/apache2/mods-enabled/
-COPY apache2/conf-enabled/* /etc/apache2/conf-enabled/
-COPY apache2/sites-enabled/* /etc/apache2/sites-enabled/
-
-RUN a2enmod remoteip rewrite
-
-## allow apache to use port 80
-RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2
+COPY scripts/* /usr/local/bin/
+COPY php/conf.d/* /etc/php/8.2/cli/conf.d/
 
 USER site
 
-EXPOSE 80
-CMD ["run-cmd.sh"]
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["php", "-a"]
