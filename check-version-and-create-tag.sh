@@ -21,6 +21,7 @@ is_latest() {
 if is_latest; then
     echo "Already lastest version; nothing to do."
 else
+
     echo ${latest} > /.current
 
     BRANCH_NAME="update-${CI_PROJECT_NAME}-${CI_PIPELINE_ID}"
