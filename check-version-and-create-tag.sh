@@ -39,6 +39,7 @@ EOF
 
     git remote remove origin
     git remote add origin https://oauth2:${GITLAB_ACCESS_TOKEN}@gitlab.waldbillig.io/containers/docker-library.git
+    git pull --tags
     git tag -a $MAJOR.$MINOR -m "Version created by gitlab-ci Build"
     git push origin $MAJOR.$MINOR
 
