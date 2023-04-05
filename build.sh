@@ -52,12 +52,12 @@ function build()
 }
 
 
-build ./php/8.2/cli/Dockerfile ./php/8.2/cli cli 8.2 4 ${REGISTRY[$i]} ${REPOPATH[$i]} ${REPOIMAGE[$i]}
+#build ./php/8.2/cli/Dockerfile ./php/8.2/cli cli 8.2 4 ${REGISTRY[$i]} ${REPOPATH[$i]} ${REPOIMAGE[$i]}
 
-# for i in "${!REGISTRY[@]}"
-# do
+for i in "${!REGISTRY[@]}"
+do
     
-#     buildAndPush ./php/8.2/Dockerfile-apache ./php/8.2/ apache 8.2 4 ${REGISTRY[$i]} ${REPOPATH[$i]} ${REPOIMAGE[$i]}
-# 	buildAndPush ./php/8.2/Dockerfile-cli ./php/8.2/ cli 8.2 4 ${REGISTRY[$i]} ${REPOPATH[$i]} ${REPOIMAGE[$i]}
+    buildAndPush ./php/8.2/apache/Dockerfile ./php/8.2/apache apache 8.2 4 ${REGISTRY[$i]} ${REPOPATH[$i]} ${REPOIMAGE[$i]}
+	buildAndPush ./php/8.2/cli/Dockerfile ./php/8.2/cli cli 8.2 4 ${REGISTRY[$i]} ${REPOPATH[$i]} ${REPOIMAGE[$i]}
 
-# done
+done
