@@ -16,12 +16,13 @@ build-8.2-apache:
   script:
 #    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"},\"$CI_DEPENDENCY_PROXY_SERVER\":{\"auth\":\"$(printf "%s:%s" ${CI_DEPENDENCY_PROXY_USER} "${CI_DEPENDENCY_PROXY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
     - source ${CI_PROJECT_DIR}/php/8.2/.env
+    - echo ${MAJOR}.${MINOR}.${PATCH}-${VARIANT}
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}/php/8.2/$VARIANT"
       --dockerfile "${CI_PROJECT_DIR}/php/8.2/$VARIANT/Dockerfile"
       --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR.$PATCH-$VARIANT"
       --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT"
-
+      registry.waldbillig.io/containers/docker-library
 # build-8.2-cli:
 #   stage: build
 #   variables:

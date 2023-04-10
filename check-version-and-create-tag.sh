@@ -17,6 +17,6 @@ get_latest_php_version()
 get_latest_php_version 8.2
 
 rm php/8.2/.env || true
-echo "MAJOR=${ver_major}" >> php/8.2/.env
-echo "MINOR=${ver_minor}" >> php/8.2/.env
-echo "PATCH=${ver_patch}" >> php/8.2/.env
+echo "export MAJOR=${ver_major}" >> php/8.2/.env
+echo "export MINOR=${ver_minor}" >> php/8.2/.env
+echo "export PATCH=${ver_patch}" >> php/8.2/.env
