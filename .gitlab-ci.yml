@@ -21,6 +21,8 @@ before_script:
 
 scheduled-docker-build:
   stage: build
+  except:
+    - tags
   script:
     - ./check-version-and-create-tag.sh
 #  rules:
