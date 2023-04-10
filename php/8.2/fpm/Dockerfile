@@ -6,9 +6,7 @@ LABEL org.opencontainers.image.source="https://gitlab.waldbillig.io/containers/d
 ENV TERM="xterm" \
     LANG="C.UTF-8" \
     LC_ALL="C.UTF-8" \
-    ACCEPT_EULA="Y" \
-    APACHE_RUN_USER="site" \
-    APACHE_RUN_GROUP="site"
+    ACCEPT_EULA="Y"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -50,11 +48,11 @@ RUN apt-get update \
     && curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg \
     && sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
     && apt-get update \
-    && dpkg -l | grep php | tee packages.txt \
     && apt-get install -y --no-install-recommends \
         php8.2-intl \
         php8.2-gd \
         php8.2-cli \
+        php8.2-fpm \
         php8.2-curl \
         php8.2-pgsql \
         php8.2-sqlite \
@@ -77,8 +75,6 @@ RUN apt-get update \
         php-rdkafka \
         php-yaml \
         php-memcached \
-        libapache2-mod-php8.2 \
-        apache2 \
     && apt-get autoremove -y \
     && apt-get autoclean \
     && apt-get clean \
@@ -95,9 +91,13 @@ RUN curl -O https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/de
     && dpkg -i deb-multimedia-keyring_2016.8.1_all.deb \
     && echo "deb http://www.deb-multimedia.org bullseye main non-free" >> /etc/apt/sources.list \
     && echo "deb http://www.deb-multimedia.org bullseye-backports main" >> /etc/apt/sources.list \
-    && apt-get update && apt-get install -y zip unzip wget imagemagick --no-install-recommends \
-    && apt-get install -t bullseye-backports -y ffmpeg mediainfo  --no-install-recommends \
-    && rm -r /var/lib/apt/lists/*
+    && apt-get update \
+    && apt-get install -y zip unzip wget imagemagick --no-install-recommends \
+    && apt-get install -t bullseye-backports -y ffmpeg mediainfo --no-install-recommends \
+    && apt-get autoremove -y \
+    && apt-get autoclean \
+    && apt-get clean \
+    && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
 
 
 #####################################
@@ -111,8 +111,11 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
     && echo "Package: odbcinst\nPin: origin \"packages.microsoft.com\"\nPin-Priority: 100\n" >> /etc/apt/preferences.d/microsoft \
     && echo "Package: odbcinst1debian2:amd64\nPin: origin \"packages.microsoft.com\"\nPin-Priority: 100\n" >> /etc/apt/preferences.d/microsoft \
     && apt-get update \
-    && apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev  --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev --no-install-recommends \
+    && apt-get autoremove -y \
+    && apt-get autoclean \
+    && apt-get clean \
+    && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
 
 RUN pecl install sqlsrv pdo_sqlsrv \
     && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.2/mods-available/sqlsrv.ini \
@@ -120,26 +123,20 @@ RUN pecl install sqlsrv pdo_sqlsrv \
     && phpenmod -v 8.2 sqlsrv pdo_sqlsrv redis rdkafka yaml kafka \
     && phpdismod -v 8.2 xdebug
 
-
-RUN ln -sfT /dev/stderr "/var/log/apache2/error.log"; \
-	ln -sfT /dev/stdout "/var/log/apache2/access.log"; \
-	ln -sfT /dev/stdout "/var/log/apache2/other_vhosts_access.log"; \
-	chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "/var/log/apache2"; \
-    chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "/var/run/apache2"; \
-    a2dismod mpm_event && a2enmod mpm_prefork
+RUN ln -s /usr/sbin/php-fpm8.2 /usr/sbin/php-fpm \
+    && mkdir -p /run/php/ \
+    && chown site.site -R /run/php
 
 COPY scripts/* /usr/local/bin/
-COPY php/conf.d/* /etc/php/8.2/apache2/conf.d/
-COPY apache2/mods-enabled/* /etc/apache2/mods-enabled/
-COPY apache2/conf-enabled/* /etc/apache2/conf-enabled/
-COPY apache2/sites-enabled/* /etc/apache2/sites-enabled/
-
-RUN a2enmod remoteip rewrite
-
-## allow apache to use port 80
-RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2
+COPY conf.d/* /etc/php/8.2/fpm/conf.d/
+COPY pool.d/* /etc/php/8.2/fpm/pool.d/
 
 USER site
 
-EXPOSE 80
-CMD ["run.sh"]
+STOPSIGNAL SIGQUIT
+
+ENTRYPOINT ["entrypoint.sh"]
+WORKDIR /var/www/html
+
+EXPOSE 9000
+CMD ["php-fpm"]

@@ -1,8 +1,0 @@
-FROM registry.waldbillig.io/containers/docker-library/php:8.2-cli as base
-
-FROM base as prod
-
-FROM base as test
-USER root
-RUN dev.sh
-USER site

@@ -1,0 +1,7 @@
+FROM registry.waldbillig.io/containers/docker-library/php:8.2-apache:8.2-cli as base
+
+FROM base as dev
+
+USER root
+RUN dev.sh
+USER site
