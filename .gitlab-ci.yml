@@ -22,7 +22,7 @@ before_script:
 scheduled-docker-build:
   stage: build
   rules:
-    - if: '$CI_COMMIT_TAG == ""'
+    - if: '$CI_COMMIT_TAG == null'
   script:
     - ./check-version-and-create-tag.sh
 #  rules:
@@ -34,7 +34,7 @@ build-8.2-apache:
   variables:
     VARIANT: apache
   rules:
-    - if: '$CI_COMMIT_TAG != ""'
+    - if: '$CI_COMMIT_TAG != null'
   cache:
     key: $MAJOR.$MINOR-$VARIANT
   script:
@@ -49,7 +49,7 @@ build-8.2-apache:
 build-8.2-cli:
   stage: build
   rules:
-    - if: '$CI_COMMIT_TAG != ""'
+    - if: '$CI_COMMIT_TAG != null'
   variables:
     VARIANT: cli
   cache:
