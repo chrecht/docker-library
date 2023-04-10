@@ -22,7 +22,6 @@ build-8.2-apache:
       --dockerfile "${CI_PROJECT_DIR}/php/8.2/$VARIANT/Dockerfile"
       --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR.$PATCH-$VARIANT"
       --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT"
-      registry.waldbillig.io/containers/docker-library
 # build-8.2-cli:
 #   stage: build
 #   variables:
