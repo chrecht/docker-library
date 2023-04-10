@@ -9,12 +9,9 @@ build-8.2-apache:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   stage: build
-  # rules:
-  #   - if: $CI_COMMIT_TAG
   variables:
     VARIANT: apache
   script:
-#    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"},\"$CI_DEPENDENCY_PROXY_SERVER\":{\"auth\":\"$(printf "%s:%s" ${CI_DEPENDENCY_PROXY_USER} "${CI_DEPENDENCY_PROXY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
     - source ${CI_PROJECT_DIR}/php/8.2/.env
     - echo ${MAJOR}.${MINOR}.${PATCH}-${VARIANT}
     - /kaniko/executor
@@ -22,39 +19,36 @@ build-8.2-apache:
       --dockerfile "${CI_PROJECT_DIR}/php/8.2/$VARIANT/Dockerfile"
       --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR.$PATCH-$VARIANT"
       --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT"
-# build-8.2-cli:
-#   stage: build
-#   variables:
-#     VARIANT: cli
-#   script:
-#     - |
-#         docker build --platform=linux/amd64 --pull \
-#           -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
-#           -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
-#           -f ./php/8.2/$VARIANT/Dockerfile ./php/8.2/$VARIANT
-#     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
-#     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
 
-# build-8.2-fpm:
-#   stage: build
-#   variables:
-#     VARIANT: fpm
-#   script:
-#     - |
-#         docker build --platform=linux/amd64 --pull \
-#           -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
-#           -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
-#           -f ./php/8.2/$VARIANT/Dockerfile ./php/8.2/$VARIANT
-#     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
-#     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
+build-8.2-cli:
+  image: 
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  stage: build
+  variables:
+    VARIANT: cli
+  script:
+    - source ${CI_PROJECT_DIR}/php/8.2/.env
+    - echo ${MAJOR}.${MINOR}.${PATCH}-${VARIANT}
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/php/8.2/$VARIANT"
+      --dockerfile "${CI_PROJECT_DIR}/php/8.2/$VARIANT/Dockerfile"
+      --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR.$PATCH-$VARIANT"
+      --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT"
 
-# # test:
-# #   stage: test
-# #   image:
-# #     name: bitnami/kubectl:latest
-# #     entrypoint: [""]
-# #   script:
-# #     - kubectl config use-context $KUBE_CONTEXT
-# #     - kubectl get pods -A
-# #     - kubectl get nodes -o wide
 
+build-8.2-fpm:
+  image: 
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  stage: build
+  variables:
+    VARIANT: fpm
+  script:
+    - source ${CI_PROJECT_DIR}/php/8.2/.env
+    - echo ${MAJOR}.${MINOR}.${PATCH}-${VARIANT}
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/php/8.2/$VARIANT"
+      --dockerfile "${CI_PROJECT_DIR}/php/8.2/$VARIANT/Dockerfile"
+      --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR.$PATCH-$VARIANT"
+      --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT"
