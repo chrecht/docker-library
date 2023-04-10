@@ -1,16 +1,15 @@
-image: docker:stable
+image: 
+  name: gcr.io/kaniko-project/executor:debug
+  entrypoint: [""]
 
 services:
-  - name: docker:dind
-    alias: dockerdaemon
+  - name: kaniko
 
 stages: 
   - build
 
 variables:
-  DOCKER_HOST: tcp://dockerdaemon:2375/
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""
+  FOO: bar
 
 before_script:
   - apk --update add curl jq git bash
@@ -31,42 +30,43 @@ before_script:
 
 build-8.2-apache:
   stage: build
+  # rules:
+  #   - if: $CI_COMMIT_TAG
   variables:
     VARIANT: apache
   script:
     - |
-        docker build --platform=linux/amd64 --pull \
-          -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
-          -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
-          -f ./php/8.2/$VARIANT/Dockerfile ./php/8.2/$VARIANT
-    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
-    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/php/8.2/$VARIANT"
+      --dockerfile "${CI_PROJECT_DIR}/php/8.2/$VARIANT/Dockerfile"
+      --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT"
+      --destination "$CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT"
 
-build-8.2-cli:
-  stage: build
-  variables:
-    VARIANT: cli
-  script:
-    - |
-        docker build --platform=linux/amd64 --pull \
-          -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
-          -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
-          -f ./php/8.2/$VARIANT/Dockerfile ./php/8.2/$VARIANT
-    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
-    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
+# build-8.2-cli:
+#   stage: build
+#   variables:
+#     VARIANT: cli
+#   script:
+#     - |
+#         docker build --platform=linux/amd64 --pull \
+#           -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
+#           -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
+#           -f ./php/8.2/$VARIANT/Dockerfile ./php/8.2/$VARIANT
+#     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
+#     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
 
-build-8.2-fpm:
-  stage: build
-  variables:
-    VARIANT: fpm
-  script:
-    - |
-        docker build --platform=linux/amd64 --pull \
-          -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
-          -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
-          -f ./php/8.2/$VARIANT/Dockerfile ./php/8.2/$VARIANT
-    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
-    - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
+# build-8.2-fpm:
+#   stage: build
+#   variables:
+#     VARIANT: fpm
+#   script:
+#     - |
+#         docker build --platform=linux/amd64 --pull \
+#           -t $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT \
+#           -t $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT \
+#           -f ./php/8.2/$VARIANT/Dockerfile ./php/8.2/$VARIANT
+#     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT
+#     - docker push $CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT
 
 # # test:
 # #   stage: test
