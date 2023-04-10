@@ -1,46 +1,22 @@
 #!/bin/bash
-# Bash 'Strict Mode'
-# http://redsymbol.net/articles/unofficial-bash-strict-mode
-# https://github.com/xwmx/bash-boilerplate#bash-strict-mode
-set -o nounset
-set -o errexit
-set -o pipefail
-IFS=$'\n\t'
 
-latest=$(curl --silent https://packages.sury.org/php/dists/bullseye/main/binary-amd64/Packages | grep "Package: php8.2-cli$" -A 5 | grep Version | sed -En  's/^Version: ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
 
-is_latest() {
+get_latest_php_version()
+{
 
-    latest=$(curl --silent https://packages.sury.org/php/dists/bullseye/main/binary-amd64/Packages | grep "Package: php8.2-cli$" -A 5 | grep Version | sed -En  's/^Version: ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
-    current=$(cat .current)
+	SEARCH_MAJOR=$1
 
-    [[ ${latest} = ${current} ]]
+	latest=$(curl --silent https://packages.sury.org/php/dists/bullseye/main/binary-amd64/Packages | grep "Package: php${SEARCH_MAJOR}-cli$" -A 5 | grep Version | sed -En  's/^Version: ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
+
+	ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+/\1/p')
+	ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+/\1/p')
+	ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/p')
 
 }
 
-if is_latest; then
-    echo "Already lastest version; nothing to do."
-else
+get_latest_php_version 8.2
 
-    echo ${latest} > .current
-    cat .current
-
-    BRANCH_NAME="php-${latest}-${CI_PIPELINE_ID}"
-    git checkout -b "${BRANCH_NAME}"
-    git config user.email "${GITLAB_USER_EMAIL}"
-    git config user.name "${GITLAB_USER_NAME}"
-
-    git add .current
-    git commit -F - <<EOF
-    Bump PHP version to ${latest}
-
-    https://www.php.net/ChangeLog-8.php#${latest}
-EOF
-
-    git remote add api-origin https://oauth2:${GITLAB_ACCESS_TOKEN}@gitlab.waldbillig.io/containers/docker-library.git
-    git push api-origin ${BRANCH_NAME}
-
-fi
-
-
-exit 0
+rm php/8.2/.env || true
+echo "MAJOR=${ver_major}" >> php/8.2/.env
+echo "MINOR=${ver_minor}" >> php/8.2/.env
+echo "PATCH=${ver_patch}" >> php/8.2/.env

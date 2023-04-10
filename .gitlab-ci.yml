@@ -1,25 +1,8 @@
-stages: 
+stages:
   - build
 
 variables:
   FOO: bar
-
-before_script:
-  - apk --update add curl jq git bash
-  - |
-    export MAJOR=$(curl --silent https://packages.sury.org/php/dists/bullseye/main/binary-amd64/Packages | grep "Package: php8.2-cli$" -A 5 | grep Version | sed -En  's/^Version: ([0-9]+\.[0-9]+).*/\1/p')
-    export MINOR=$(curl --silent https://packages.sury.org/php/dists/bullseye/main/binary-amd64/Packages | grep "Package: php8.2-cli$" -A 5 | grep Version | sed -En  's/^Version: [0-9]+\.[0-9]+\.([0-9]+).*/\1/p')
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
-# scheduled-docker-build:
-#   stage: build
-#   rules:
-#     - if: '$CI_COMMIT_TAG == null'
-#   script:
-#     - ./check-version-and-create-tag.sh
-# #  rules:
-# #    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_REF_PROTECTED
-
 
 build-8.2-apache:
   image: 
@@ -31,12 +14,13 @@ build-8.2-apache:
   variables:
     VARIANT: apache
   script:
+    - source ${CI_PROJECT_DIR}/php/8.2/.env
     - |
       /kaniko/executor
       --context "${CI_PROJECT_DIR}/php/8.2/$VARIANT"
       --dockerfile "${CI_PROJECT_DIR}/php/8.2/$VARIANT/Dockerfile"
+      --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR.$PATCH-$VARIANT"
       --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT"
-      --destination "$CI_REGISTRY_IMAGE/php:$MAJOR-$VARIANT"
 
 # build-8.2-cli:
 #   stage: build
