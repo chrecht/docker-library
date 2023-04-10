@@ -33,10 +33,6 @@ build-8.2-apache:
   stage: build
   variables:
     VARIANT: apache
-  # rules:
-  #   - if: '$CI_COMMIT_TAG != null'
-  # cache:
-  #   key: $MAJOR.$MINOR-$VARIANT
   script:
     - |
         docker build --platform=linux/amd64 --pull \
@@ -48,10 +44,6 @@ build-8.2-apache:
 
 build-8.2-cli:
   stage: build
-  # rules:
-  #   - if: '$CI_COMMIT_TAG != null'
-  # cache:
-  #   key: $MAJOR.$MINOR-$VARIANT
   variables:
     VARIANT: cli
   script:
@@ -65,10 +57,6 @@ build-8.2-cli:
 
 build-8.2-fpm:
   stage: build
-  # rules:
-  #   - if: '$CI_COMMIT_TAG != null'
-  # cache:
-  #   key: $MAJOR.$MINOR-$VARIANT
   variables:
     VARIANT: fpm
   script:
