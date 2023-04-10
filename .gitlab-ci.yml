@@ -1,10 +1,3 @@
-image: 
-  name: gcr.io/kaniko-project/executor:debug
-  entrypoint: [""]
-
-services:
-  - name: kaniko
-
 stages: 
   - build
 
@@ -29,6 +22,9 @@ before_script:
 
 
 build-8.2-apache:
+  image: 
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
   stage: build
   # rules:
   #   - if: $CI_COMMIT_TAG
@@ -36,7 +32,7 @@ build-8.2-apache:
     VARIANT: apache
   script:
     - |
-    - /kaniko/executor
+      /kaniko/executor
       --context "${CI_PROJECT_DIR}/php/8.2/$VARIANT"
       --dockerfile "${CI_PROJECT_DIR}/php/8.2/$VARIANT/Dockerfile"
       --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT"
