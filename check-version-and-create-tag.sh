@@ -46,7 +46,7 @@ else
     BRANCH_NAME="update-${CI_PROJECT_NAME}-${CI_PIPELINE_ID}"
     git config user.email "${GITLAB_USER_EMAIL}"
     git config user.name "${GITLAB_USER_NAME}"
-    #git checkout -b "${BRANCH_NAME}"
+    git checkout "main"
     
     git add php/8.2/.current
 	git add php/8.2/.env
