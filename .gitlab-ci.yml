@@ -12,6 +12,7 @@ scheduled-docker-build:
     name: debian:bullseye-slim
   script:
     - apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git ssh
+    - mkdir -p ~/.ssh/config
     - echo "HOST *" > ~/.ssh/config
     - echo "StrictHostKeyChecking no" >> ~/.ssh/config
     - ./check-version-and-create-tag.sh
