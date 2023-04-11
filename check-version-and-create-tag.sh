@@ -50,7 +50,8 @@ else
 
     git config user.email "${GITLAB_USER_EMAIL}"
     git config user.name "${GITLAB_USER_NAME}"
-    git checkout main
+    BRANCH_NAME="bump-php-${MAJOR}.${MINOR}.${PATCH}"
+    git checkout ${BRANCH_NAME}
         
     git add php/8.2/.current
 	git add php/8.2/.env
@@ -62,6 +63,6 @@ EOF
 
     git remote remove origin
     git remote add origin https://oauth2:${GITLAB_ACCESS_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
-    git push origin main
+    git push origin ${BRANCH_NAME}
 
 fi
