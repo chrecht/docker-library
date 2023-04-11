@@ -11,7 +11,7 @@ scheduled-docker-build:
   image: 
     name: debian:bullseye-slim
   script:
-    - apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git
+    - apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git ssh
     - ./check-version-and-create-tag.sh
 
 
