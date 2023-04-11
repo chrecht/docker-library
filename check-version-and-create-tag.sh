@@ -46,7 +46,8 @@ else
     BRANCH_NAME="update-${CI_PROJECT_NAME}-${CI_PIPELINE_ID}"
     git config user.email "${GITLAB_USER_EMAIL}"
     git config user.name "${GITLAB_USER_NAME}"
-    git checkout -b "${BRANCH_NAME}"
+    #git checkout -b "${BRANCH_NAME}"
+    
     git add php/8.2/.current
 	git add php/8.2/.env
     git commit -F - <<EOF
@@ -57,8 +58,7 @@ EOF
 
     git remote remove origin
     git remote add origin https://oauth2:${GITLAB_ACCESS_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
-    git tag -a ${MAJOR}.${MINOR}.${PATCH} -m "Version created by gitlab-ci"
-    git push origin ${MAJOR}.${MINOR}.${PATCH}
+    git push origin main
 
 
 fi

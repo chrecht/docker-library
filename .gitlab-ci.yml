@@ -11,12 +11,8 @@ scheduled-docker-build:
   image: 
     name: debian:bullseye-slim
   script:
-    - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git ssh
-    - mkdir -p ~/.ssh
-    - echo "HOST *" > ~/.ssh/config
-    - echo "StrictHostKeyChecking no" >> ~/.ssh/config
+    - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git
     - ./check-version-and-create-tag.sh
-
 
 build-8.2-apache:
   stage: build
