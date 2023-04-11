@@ -1,7 +1,7 @@
 #!/bin/bash
-#set -o nounset
-#set -o errexit
-#set -o pipefail
+set -o nounset
+set -o errexit
+set -o pipefail
 IFS=$'\n\t'
 
 get_latest_php_version()
@@ -50,7 +50,8 @@ else
 
     git config user.email "${GITLAB_USER_EMAIL}"
     git config user.name "${GITLAB_USER_NAME}"
-    
+    git checkout main
+        
     git add php/8.2/.current
 	git add php/8.2/.env
     git commit -F - <<EOF
