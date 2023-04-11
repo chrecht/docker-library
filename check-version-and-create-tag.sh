@@ -50,9 +50,9 @@ else
 
     git config user.email "${GITLAB_USER_EMAIL}"
     git config user.name "${GITLAB_USER_NAME}"
-    BRANCH_NAME="bump-php-${MAJOR}.${MINOR}.${PATCH}"
-    git checkout ${BRANCH_NAME}
-        
+    BRANCH_NAME="bump/php-${MAJOR}-${MINOR}-${PATCH}"
+    git checkout -b "${BRANCH_NAME}"
+
     git add php/8.2/.current
 	git add php/8.2/.env
     git commit -F - <<EOF
