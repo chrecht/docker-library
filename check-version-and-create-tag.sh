@@ -1,5 +1,8 @@
 #!/bin/bash
-
+set -o nounset
+set -o errexit
+set -o pipefail
+IFS=$'\n\t'
 
 get_latest_php_version()
 {
