@@ -12,7 +12,7 @@ scheduled-docker-build:
     name: debian:bullseye-slim
   script:
     - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git
-    - ./check-version-and-create-tag.sh
+    - ./ci-check-version-and-branch.sh
 
 build-8.2-apache:
   stage: build
