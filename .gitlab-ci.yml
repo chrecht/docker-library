@@ -4,11 +4,24 @@ stages:
 variables:
   FOO: bar
 
+scheduled-docker-build:
+  stage: build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  image: 
+    name: debian:bullseye-slim
+  script:
+    - apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+    - ./check-version-and-create-tag.sh
+
+
 build-8.2-apache:
+  stage: build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
   image: 
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
-  stage: build
   variables:
     VARIANT: apache
   script:
@@ -21,10 +34,12 @@ build-8.2-apache:
       --destination "$CI_REGISTRY_IMAGE/php:$MAJOR.$MINOR-$VARIANT"
 
 build-8.2-cli:
+  stage: build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
   image: 
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
-  stage: build
   variables:
     VARIANT: cli
   script:
@@ -38,10 +53,12 @@ build-8.2-cli:
 
 
 build-8.2-fpm:
+  stage: build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
   image: 
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
-  stage: build
   variables:
     VARIANT: fpm
   script:
