@@ -56,7 +56,7 @@ else
 EOF
 
     git remote remove origin
-    git remote add origin https://oauth2:${GITLAB_ACCESS_TOKEN}@${CI_SERVER_HOST}:$CI_PROJECT_PATH
+    git remote add origin https://oauth2:${GITLAB_ACCESS_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
     git tag -a ${MAJOR}.${MINOR}.${PATCH} -m "Version created by gitlab-ci"
     git push origin ${MAJOR}.${MINOR}.${PATCH}
 
