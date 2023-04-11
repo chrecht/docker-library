@@ -1,7 +1,7 @@
 #!/bin/bash
-set -o nounset
-set -o errexit
-set -o pipefail
+#set -o nounset
+#set -o errexit
+#set -o pipefail
 IFS=$'\n\t'
 
 get_latest_php_version()
@@ -21,9 +21,15 @@ is_latest() {
 
 	SEARCH_MAJOR=$1
 
-    current=$(cat php/${SEARCH_MAJOR}/.env)
+    current=$(cat php/${SEARCH_MAJOR}/.current)
 
-    [[ ${latest} = ${current} ]]
+    echo "${latest} = ${current}"
+
+    if [ "${latest}" = "${current}" ]; then
+        return 0
+    else
+        return 1
+    fi
 
 }
 
@@ -42,11 +48,8 @@ else
 	echo "export MINOR=${MINOR}" >> php/8.2/.env
 	echo "export PATCH=${PATCH}" >> php/8.2/.env
 
-
-    BRANCH_NAME="update-${CI_PROJECT_NAME}-${CI_PIPELINE_ID}"
     git config user.email "${GITLAB_USER_EMAIL}"
     git config user.name "${GITLAB_USER_NAME}"
-    git checkout "main"
     
     git add php/8.2/.current
 	git add php/8.2/.env
@@ -59,6 +62,5 @@ EOF
     git remote remove origin
     git remote add origin https://oauth2:${GITLAB_ACCESS_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
     git push origin main
-
 
 fi
