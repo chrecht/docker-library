@@ -132,6 +132,7 @@ RUN	set -eux; \
 	. "$APACHE_ENVVARS"; \
     for dir in \
 		"$APACHE_LOCK_DIR" \
+        "$APACHE_RUN_DIR" \
         "$APACHE_LOG_DIR" \
 	; do \
 		rm -rvf "$dir"; \
