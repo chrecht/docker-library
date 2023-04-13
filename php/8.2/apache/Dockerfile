@@ -138,7 +138,7 @@ RUN	set -eux; \
 		rm -rvf "$dir"; \
 		mkdir -p "$dir"; \
 		chown "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "$dir"; \
-		chmod 1777 "$dir"; \
+		chmod 777 "$dir"; \
 	done; \
     rm -rvf /var/www/html/*; \
     ln -sfT /dev/stderr "$APACHE_LOG_DIR/error.log"; \
