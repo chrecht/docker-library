@@ -133,12 +133,14 @@ RUN	set -eux; \
 		mkdir -p "$dir"; \
 		chown "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "$dir"; \
 		chmod 1777 "$dir"; \
-	done;
-
-RUN ln -sfT /dev/stderr "/var/log/apache2/error.log"; \
-	ln -sfT /dev/stdout "/var/log/apache2/access.log"; \
-	ln -sfT /dev/stdout "/var/log/apache2/other_vhosts_access.log"; \
-	chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "/var/log/apache2"; \
+	done; \
+    \
+    rm -rvf /var/www/html/*; \
+    \
+    ln -sfT /dev/stderr "$APACHE_LOG_DIR/error.log"; \
+	ln -sfT /dev/stdout "$APACHE_LOG_DIR/access.log"; \
+	ln -sfT /dev/stdout "$APACHE_LOG_DIR/other_vhosts_access.log"; \
+	chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "$APACHE_LOG_DIR"; \
     a2dismod mpm_event && a2enmod mpm_prefork
 
 COPY scripts/* /usr/local/bin/
@@ -156,3 +158,6 @@ USER site
 
 EXPOSE 80
 CMD ["run.sh"]
+ENTRYPOINT ["docker-php-entrypoint"]
+# https://httpd.apache.org/docs/2.4/stopping.html#gracefulstop
+STOPSIGNAL SIGWINCH
