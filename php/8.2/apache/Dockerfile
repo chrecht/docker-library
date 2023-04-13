@@ -12,6 +12,8 @@ ENV TERM="xterm" \
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+ENV APACHE_LOCK_DIR /var/run/apache2
+
 
 #####################
 # Add User site
@@ -120,6 +122,16 @@ RUN pecl install sqlsrv pdo_sqlsrv \
     && phpenmod -v 8.2 sqlsrv pdo_sqlsrv redis rdkafka yaml kafka \
     && phpdismod -v 8.2 xdebug
 
+
+RUN	set -eux; \
+    for dir in \
+		"$APACHE_LOCK_DIR" \
+	; do \
+		rm -rvf "$dir"; \
+		mkdir -p "$dir"; \
+		chown "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "$dir"; \
+		chmod 1777 "$dir"; \
+	done;
 
 RUN ln -sfT /dev/stderr "/var/log/apache2/error.log"; \
 	ln -sfT /dev/stdout "/var/log/apache2/access.log"; \
