@@ -139,7 +139,6 @@ RUN ln -sfT /dev/stderr "/var/log/apache2/error.log"; \
 	ln -sfT /dev/stdout "/var/log/apache2/access.log"; \
 	ln -sfT /dev/stdout "/var/log/apache2/other_vhosts_access.log"; \
 	chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "/var/log/apache2"; \
-    chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "/var/run/apache2"; \
     a2dismod mpm_event && a2enmod mpm_prefork
 
 COPY scripts/* /usr/local/bin/
