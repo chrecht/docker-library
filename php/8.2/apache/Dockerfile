@@ -14,6 +14,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 ENV APACHE_LOCK_DIR /var/run/apache2
 ENV APACHE_LOG_DIR /var/log/apache2
+ENV APACHE_CONFDIR /etc/apache2
+ENV APACHE_ENVVARS $APACHE_CONFDIR/envvars
 
 
 #####################
@@ -125,6 +127,9 @@ RUN pecl install sqlsrv pdo_sqlsrv \
 
 
 RUN	set -eux; \
+	sed -ri 's/^export ([^=]+)=(.*)$/: ${\1:=\2}\nexport \1/' "$APACHE_ENVVARS"; \
+	\
+	. "$APACHE_ENVVARS"; \
     for dir in \
 		"$APACHE_LOCK_DIR" \
         "$APACHE_LOG_DIR" \
@@ -134,9 +139,7 @@ RUN	set -eux; \
 		chown "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "$dir"; \
 		chmod 1777 "$dir"; \
 	done; \
-    \
     rm -rvf /var/www/html/*; \
-    \
     ln -sfT /dev/stderr "$APACHE_LOG_DIR/error.log"; \
 	ln -sfT /dev/stdout "$APACHE_LOG_DIR/access.log"; \
 	ln -sfT /dev/stdout "$APACHE_LOG_DIR/other_vhosts_access.log"; \
