@@ -156,8 +156,7 @@ RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2
 
 USER site
 
+STOPSIGNAL SIGWINCH
+
 EXPOSE 80
 CMD ["run.sh"]
-ENTRYPOINT ["docker-php-entrypoint"]
-# https://httpd.apache.org/docs/2.4/stopping.html#gracefulstop
-STOPSIGNAL SIGWINCH
