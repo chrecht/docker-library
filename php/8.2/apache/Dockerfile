@@ -13,6 +13,7 @@ ENV TERM="xterm" \
 ARG DEBIAN_FRONTEND=noninteractive
 
 ENV APACHE_LOCK_DIR /var/run/apache2
+ENV APACHE_LOG_DIR /var/log/apache2
 
 
 #####################
@@ -126,6 +127,7 @@ RUN pecl install sqlsrv pdo_sqlsrv \
 RUN	set -eux; \
     for dir in \
 		"$APACHE_LOCK_DIR" \
+        "$APACHE_LOG_DIR" \
 	; do \
 		rm -rvf "$dir"; \
 		mkdir -p "$dir"; \
