@@ -1,6 +1,6 @@
 FROM debian:bullseye-slim
 LABEL maintainer="Christian WALDBILLIG <christian@waldbillig.io>"
-LABEL org.opencontainers.image.source="https://gitlab.waldbillig.io/containers/docker-library"
+LABEL org.opencontainers.image.source="https://github.com/chrecht/docker-library"
 
 
 ENV TERM="xterm" \

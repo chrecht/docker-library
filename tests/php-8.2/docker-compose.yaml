@@ -32,7 +32,7 @@ services:
       - ./html:/var/www/html
 
   nginx:
-    image: registry.waldbillig.io/containers/docker-library/nginx:mainline
+    image: ghcr.io/chrecht/docker-library/nginx:mainline
     ports:
       - "8080:80"
     volumes:
