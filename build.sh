@@ -1,7 +1,7 @@
 #!/bin/bash
 
-REGISTRY=("registry.waldbillig.io")
-REPOPATH=("containers")
+REGISTRY=("ghcr.io")
+REPOPATH=("chrecht")
 REPOIMAGE=("docker-library/php")
 
 
