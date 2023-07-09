@@ -90,13 +90,9 @@ RUN curl -O https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/de
     && dpkg -i deb-multimedia-keyring_2016.8.1_all.deb \
     && echo "deb http://www.deb-multimedia.org bullseye main non-free" >> /etc/apt/sources.list \
     && echo "deb http://www.deb-multimedia.org bullseye-backports main" >> /etc/apt/sources.list \
-    && apt-get update \
-    && apt-get install -y zip unzip wget imagemagick --no-install-recommends \
-    && apt-get install -t bullseye-backports -y ffmpeg mediainfo --no-install-recommends \
-    && apt-get autoremove -y \
-    && apt-get autoclean \
-    && apt-get clean \
-    && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
+    && apt-get update && apt-get install -y zip unzip wget imagemagick --no-install-recommends \
+    && apt-get install -t bullseye-backports -y ffmpeg mediainfo  --no-install-recommends \
+    && rm -r /var/lib/apt/lists/*
 
 
 #####################################

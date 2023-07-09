@@ -12,11 +12,6 @@ ENV TERM="xterm" \
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-ENV APACHE_LOCK_DIR /var/run/apache2
-ENV APACHE_LOG_DIR /var/log/apache2
-ENV APACHE_CONFDIR /etc/apache2
-ENV APACHE_ENVVARS $APACHE_CONFDIR/envvars
-
 
 #####################
 # Add User site
@@ -116,8 +111,11 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
     && echo "Package: odbcinst\nPin: origin \"packages.microsoft.com\"\nPin-Priority: 100\n" >> /etc/apt/preferences.d/microsoft \
     && echo "Package: odbcinst1debian2:amd64\nPin: origin \"packages.microsoft.com\"\nPin-Priority: 100\n" >> /etc/apt/preferences.d/microsoft \
     && apt-get update \
-    && apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev  --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev --no-install-recommends \
+    && apt-get autoremove -y \
+    && apt-get autoclean \
+    && apt-get clean \
+    && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
 
 RUN pecl install sqlsrv pdo_sqlsrv \
     && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.2/mods-available/sqlsrv.ini \
@@ -126,25 +124,11 @@ RUN pecl install sqlsrv pdo_sqlsrv \
     && phpdismod -v 8.2 xdebug
 
 
-RUN	set -eux; \
-	sed -ri 's/^export ([^=]+)=(.*)$/: ${\1:=\2}\nexport \1/' "$APACHE_ENVVARS"; \
-	\
-	. "$APACHE_ENVVARS"; \
-    for dir in \
-		"$APACHE_LOCK_DIR" \
-        "$APACHE_RUN_DIR" \
-        "$APACHE_LOG_DIR" \
-	; do \
-		rm -rvf "$dir"; \
-		mkdir -p "$dir"; \
-		chown "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "$dir"; \
-		chmod 777 "$dir"; \
-	done; \
-    rm -rvf /var/www/html/*; \
-    ln -sfT /dev/stderr "$APACHE_LOG_DIR/error.log"; \
-	ln -sfT /dev/stdout "$APACHE_LOG_DIR/access.log"; \
-	ln -sfT /dev/stdout "$APACHE_LOG_DIR/other_vhosts_access.log"; \
-	chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "$APACHE_LOG_DIR"; \
+RUN ln -sfT /dev/stderr "/var/log/apache2/error.log"; \
+	ln -sfT /dev/stdout "/var/log/apache2/access.log"; \
+	ln -sfT /dev/stdout "/var/log/apache2/other_vhosts_access.log"; \
+	chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "/var/log/apache2"; \
+    chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "/var/run/apache2"; \
     a2dismod mpm_event && a2enmod mpm_prefork
 
 COPY scripts/* /usr/local/bin/
@@ -153,14 +137,18 @@ COPY apache2/mods-enabled/* /etc/apache2/mods-enabled/
 COPY apache2/conf-enabled/* /etc/apache2/conf-enabled/
 COPY apache2/sites-enabled/* /etc/apache2/sites-enabled/
 
-RUN a2enmod remoteip rewrite
+# cleanup /var/www/html folder
+RUN rm -rf /var/www/html \
+    && mkdir -p /var/www/html \
+    && chown site.site -R /var/www
+
+
+RUN a2enmod remoteip rewrite headers setenvif
 
 ## allow apache to use port 80
 RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2
 
 USER site
-
-STOPSIGNAL SIGWINCH
 
 EXPOSE 80
 CMD ["run.sh"]
