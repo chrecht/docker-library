@@ -71,12 +71,12 @@ RUN apt-get update \
         php8.2-soap \
         php8.2-dev \
         php-pear \
-        php-redis \
-        php-amqp \
-        php-odbc \
-        php-rdkafka \
-        php-yaml \
-        php-memcached \
+        php8.2-redis \
+        php8.2-amqp \
+        php8.2-odbc \
+        php8.2-rdkafka \
+        php8.2-yaml \
+        php8.2-memcached \
         libapache2-mod-php8.2 \
         apache2 \
     && apt-get autoremove -y \
@@ -111,11 +111,8 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
     && echo "Package: odbcinst\nPin: origin \"packages.microsoft.com\"\nPin-Priority: 100\n" >> /etc/apt/preferences.d/microsoft \
     && echo "Package: odbcinst1debian2:amd64\nPin: origin \"packages.microsoft.com\"\nPin-Priority: 100\n" >> /etc/apt/preferences.d/microsoft \
     && apt-get update \
-    && apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev --no-install-recommends \
-    && apt-get autoremove -y \
-    && apt-get autoclean \
-    && apt-get clean \
-    && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
+    && apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev  --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN pecl install sqlsrv pdo_sqlsrv \
     && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.2/mods-available/sqlsrv.ini \
@@ -133,6 +130,7 @@ RUN ln -sfT /dev/stderr "/var/log/apache2/error.log"; \
 
 COPY scripts/* /usr/local/bin/
 COPY php/conf.d/* /etc/php/8.2/apache2/conf.d/
+COPY php/conf.d/* /etc/php/8.2/cli/conf.d/
 COPY apache2/mods-enabled/* /etc/apache2/mods-enabled/
 COPY apache2/conf-enabled/* /etc/apache2/conf-enabled/
 COPY apache2/sites-enabled/* /etc/apache2/sites-enabled/
@@ -144,6 +142,8 @@ RUN rm -rf /var/www/html \
 
 
 RUN a2enmod remoteip rewrite headers setenvif
+
+RUN chown site.site -R /etc/apache2/sites-enabled/*
 
 ## allow apache to use port 80
 RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2

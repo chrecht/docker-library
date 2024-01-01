@@ -69,12 +69,12 @@ RUN apt-get update \
         php8.2-soap \
         php8.2-dev \
         php-pear \
-        php-redis \
-        php-amqp \
-        php-odbc \
-        php-rdkafka \
-        php-yaml \
-        php-memcached \
+        php8.2-redis \
+        php8.2-amqp \
+        php8.2-odbc \
+        php8.2-rdkafka \
+        php8.2-yaml \
+        php8.2-memcached \
     && apt-get autoremove -y \
     && apt-get autoclean \
     && apt-get clean \

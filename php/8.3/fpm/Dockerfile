@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 LABEL maintainer="Christian WALDBILLIG <christian@waldbillig.io>"
 LABEL org.opencontainers.image.source="https://github.com/chrecht/docker-library"
 
@@ -49,50 +49,50 @@ RUN apt-get update \
     && sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-        php8.2-intl \
-        php8.2-gd \
-        php8.2-cli \
-        php8.2-curl \
-        php8.2-pgsql \
-        php8.2-sqlite \
-        php8.2-mysql \
-        php8.2-zip \
-        php8.2-xml \
-        php8.2-mbstring \
-        php8.2-imagick \
-        php8.2-xdebug \
-        php8.2-bz2 \
-        php8.2-intl \
-        php8.2-odbc \
-        php8.2-opcache \
-        php8.2-soap \
-        php8.2-dev \
+        php8.3-intl \
+        php8.3-gd \
+        php8.3-cli \
+        php8.3-fpm \
+        php8.3-curl \
+        php8.3-pgsql \
+        php8.3-sqlite \
+        php8.3-mysql \
+        php8.3-zip \
+        php8.3-xml \
+        php8.3-mbstring \
+        php8.3-imagick \
+        php8.3-xdebug \
+        php8.3-bz2 \
+        php8.3-intl \
+        php8.3-odbc \
+        php8.3-opcache \
+        php8.3-soap \
+        php8.3-dev \
         php-pear \
-        php8.2-redis \
-        php8.2-amqp \
-        php8.2-odbc \
-        php8.2-rdkafka \
-        php8.2-yaml \
-        php8.2-memcached \
+        php8.3-redis \
+        php8.3-amqp \
+        php8.3-rdkafka \
+        php8.3-yaml \
+        php8.3-memcached \
     && apt-get autoremove -y \
     && apt-get autoclean \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
 
-RUN update-alternatives --set php /usr/bin/php8.2 \
-    && update-alternatives --set php-config /usr/bin/php-config8.2 \
-    && update-alternatives --set phpize /usr/bin/phpize8.2
+RUN update-alternatives --set php /usr/bin/php8.3 \
+    && update-alternatives --set php-config /usr/bin/php-config8.3 \
+    && update-alternatives --set phpize /usr/bin/phpize8.3
 
 #####################################
 # FFMPEG & MediaInfo
 #####################################
 RUN curl -O https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-multimedia-keyring_2016.8.1_all.deb \
     && dpkg -i deb-multimedia-keyring_2016.8.1_all.deb \
-    && echo "deb http://www.deb-multimedia.org bullseye main non-free" >> /etc/apt/sources.list \
-    && echo "deb http://www.deb-multimedia.org bullseye-backports main" >> /etc/apt/sources.list \
+    && echo "deb http://www.deb-multimedia.org bookworm main non-free" >> /etc/apt/sources.list \
+    && echo "deb http://www.deb-multimedia.org bookworm-backports main" >> /etc/apt/sources.list \
     && apt-get update \
     && apt-get install -y zip unzip wget imagemagick --no-install-recommends \
-    && apt-get install -t bullseye-backports -y ffmpeg mediainfo --no-install-recommends \
+    && apt-get install -t bookworm-backports -y ffmpeg mediainfo --no-install-recommends \
     && apt-get autoremove -y \
     && apt-get autoclean \
     && apt-get clean \
@@ -117,16 +117,25 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
     && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
 
 RUN pecl install sqlsrv pdo_sqlsrv \
-    && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.2/mods-available/sqlsrv.ini \
-    && printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.2/mods-available/pdo_sqlsrv.ini \
-    && phpenmod -v 8.2 sqlsrv pdo_sqlsrv redis rdkafka yaml kafka \
-    && phpdismod -v 8.2 xdebug
+    && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.3/mods-available/sqlsrv.ini \
+    && printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.3/mods-available/pdo_sqlsrv.ini \
+    && phpenmod -v 8.3 sqlsrv pdo_sqlsrv redis rdkafka yaml kafka \
+    && phpdismod -v 8.3 xdebug
 
+RUN ln -s /usr/sbin/php-fpm8.3 /usr/sbin/php-fpm \
+    && mkdir -p /run/php/ \
+    && chown site.site -R /run/php
 
 COPY scripts/* /usr/local/bin/
-COPY php/conf.d/* /etc/php/8.2/cli/conf.d/
+COPY conf.d/* /etc/php/8.3/fpm/conf.d/
+COPY pool.d/* /etc/php/8.3/fpm/pool.d/
 
 USER site
 
+STOPSIGNAL SIGQUIT
+
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["php", "-a"]
+WORKDIR /var/www/html
+
+EXPOSE 9000
+CMD ["php-fpm"]

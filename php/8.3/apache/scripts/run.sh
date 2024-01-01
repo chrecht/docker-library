@@ -15,15 +15,6 @@ fi
 : "${APACHE_PID_FILE:=$APACHE_RUN_DIR/apache2.pid}"
 rm -f "$APACHE_PID_FILE"
 
-
-# Set the document root
-if [[ -n "${APACHE_DOCUMENT_ROOT}" ]]; then
-
-	sed -e "s#/var/www/html#${APACHE_DOCUMENT_ROOT:-/var/www/html}#g" /etc/apache2/sites-enabled/000-default.conf > /tmp/000-default.conf
-	cp /tmp/000-default.conf /etc/apache2/sites-enabled/000-default.conf
-
-fi
-
 # create missing directories
 # (especially APACHE_RUN_DIR, APACHE_LOCK_DIR, and APACHE_LOG_DIR)
 for e in "${!APACHE_@}"; do
