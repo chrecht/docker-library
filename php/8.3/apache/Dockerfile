@@ -142,6 +142,8 @@ RUN rm -rf /var/www/html \
 
 RUN a2enmod remoteip rewrite headers setenvif
 
+RUN chown site.site -R /etc/apache2/sites-enabled/*
+
 ## allow apache to use port 80
 RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2
 
