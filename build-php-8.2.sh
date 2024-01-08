@@ -9,12 +9,12 @@ REPOIMAGE=("docker-library/php")
 
 
 #####################
-### php-8.3
+### php-8.2
 #####################
 
-BASEPATH=./php/8.3
+BASEPATH=./php/8.2
 
-get_latest_php_version 8.3
+get_latest_php_version 8.2
 
 echo "Latest PHP Version: ${latest}"
 

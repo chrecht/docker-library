@@ -1,55 +1,11 @@
 #!/bin/bash
 
+. ./functions.sh
+
 REGISTRY=("ghcr.io")
 REPOPATH=("chrecht")
 REPOIMAGE=("docker-library/nginx")
 
-
-function buildAndPush()
-{
-
-    DOCKERFILE=$1
-    CONTEXT=$2
-    VARIANT=$3
-    MAJOR=$4
-    MINOR=$5
-
-	REGISTRY=$6
-	REPOPATH=$7
-	REPOIMAGE=$8
-
-	docker buildx build \
-		--platform=linux/amd64 \
-		--push \
-		--pull \
-		-t ${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR} \
-		-t ${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}-${VARIANT} \
-		-t ${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}-${VARIANT} \
-		-f ${DOCKERFILE} --progress=plain ${CONTEXT}
-
-}
-
-function build()
-{
-
-    DOCKERFILE=$1
-    CONTEXT=$2
-    VARIANT=$3
-    MAJOR=$4
-    MINOR=$5
-
-	REGISTRY=$6
-	REPOPATH=$7
-	REPOIMAGE=$8
-
-	docker buildx build \
-		--platform=linux/amd64 \
-		--pull \
-		-t ${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}-${VARIANT} \
-		-t ${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}-${VARIANT} \
-		-f ${DOCKERFILE} --progress=plain ${CONTEXT}
-
-}
 
 
 BASEPATH=./nginx

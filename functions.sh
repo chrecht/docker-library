@@ -1,8 +1,3 @@
-#!/bin/bash
-
-REGISTRY=("ghcr.io")
-REPOPATH=("chrecht")
-REPOIMAGE=("docker-library/php")
 
 
 function buildAndPush()
@@ -20,8 +15,8 @@ function buildAndPush()
 
 	docker buildx build \
 		--platform=linux/amd64 \
-		--push \
 		--pull \
+		--push \
 		-t ${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}-${VARIANT} \
 		-t ${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}-${VARIANT} \
 		-f ${DOCKERFILE} --progress=plain ${CONTEXT}
@@ -66,45 +61,12 @@ get_latest_php_version()
 
 is_latest() {
     
-    current=$(cat ${BASEPATH}/.current)
+	if [ -f ${BASEPATH}/.current ]; then
+    	current=$(cat ${BASEPATH}/.current)
+	else
+		current=""
+	fi
 
     [[ ${latest} = ${current} ]]
 
 }
-
-
-#####################
-### php-8.2
-#####################
-
-BASEPATH=./php/8.2
-
-get_latest_php_version 8.2
-
-echo "Latest PHP Version: ${latest}"
-
-if is_latest; then
-	
-	echo "Already lastest version; do nothing"
-
-else 
-
-	echo ${latest} > ${BASEPATH}/.current
-
-    git add ${BASEPATH}/.current
-    git commit -F - <<EOF
-    Bump PHP version to ${latest}
-
-    https://www.php.net/ChangeLog-8.php#${latest}
-EOF
-
-	for i in "${!REGISTRY[@]}"
-	do
-		buildAndPush ${BASEPATH}/apache/Dockerfile ${BASEPATH}/apache apache ${ver_major}.${ver_minor} ${ver_patch} ${REGISTRY[$i]} ${REPOPATH[$i]} ${REPOIMAGE[$i]}
-		buildAndPush ${BASEPATH}/cli/Dockerfile ${BASEPATH}/cli cli ${ver_major}.${ver_minor} ${ver_patch} ${REGISTRY[$i]} ${REPOPATH[$i]} ${REPOIMAGE[$i]}
-		buildAndPush ${BASEPATH}/fpm/Dockerfile ${BASEPATH}/fpm fpm ${ver_major}.${ver_minor} ${ver_patch} ${REGISTRY[$i]} ${REPOPATH[$i]} ${REPOIMAGE[$i]}
-	done
-
-fi
-
-exit 0
