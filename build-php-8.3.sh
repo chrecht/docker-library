@@ -22,7 +22,7 @@ if is_latest; then
 	
 	echo "Already lastest version; do nothing"
 
-else 
+else
 
 	echo ${latest} > ${BASEPATH}/.current
 
