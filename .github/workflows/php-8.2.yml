@@ -23,6 +23,7 @@ jobs:
           images: ghcr.io/chrecht/docker-library/php
           tags: |
             type=semver,pattern={{version}},suffix=-apache,latest=false
+            type=semver,pattern={{major}}.{{minor}},suffix=-apache,latest=false
           flavor: |
             latest=false
       - name: Login to image repository
@@ -58,6 +59,7 @@ jobs:
           images: ghcr.io/chrecht/docker-library/php
           tags: |
             type=semver,pattern={{version}},suffix=-cli,latest=false
+            type=semver,pattern={{major}}.{{minor}},suffix=-cli,latest=false
           flavor: |
             latest=false
       - name: Login to image repository
@@ -93,6 +95,7 @@ jobs:
           images: ghcr.io/chrecht/docker-library/php
           tags: |
             type=semver,pattern={{version}},suffix=-fpm,latest=false
+            type=semver,pattern={{major}}.{{minor}},suffix=-fpm,latest=false
           flavor: |
             latest=false
       - name: Login to image repository
