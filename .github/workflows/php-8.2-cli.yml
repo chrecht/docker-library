@@ -3,7 +3,7 @@ name: Build & Push
 on:
   push:
     tags:
-      - "v*"
+      - "v8.2.*"
   # pull_request:
   #   branches:
   #     - "main"
