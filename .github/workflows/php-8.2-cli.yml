@@ -10,7 +10,7 @@ on:
 
 jobs:
 
-  docker-apache:
+  docker-cli:
 
     runs-on: ubuntu-latest
 
@@ -27,7 +27,7 @@ jobs:
           flavor: |
             latest=auto
             prefix=php-,onlatest=false
-            suffix=apache
+            suffix=cli
             
       - name: Login to image repository
         if: github.ref_type == 'tag'
@@ -40,8 +40,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: ./php/8.2/
-          file: ./php/8.2/Dockerfile-apache
+          context: ./php/8.2/cli
+          file: ./php/8.2/cli/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
