@@ -26,7 +26,8 @@ jobs:
           images: ghcr.io/chrecht/docker-library/php
           tags: |
             type=semver,pattern={{version}},suffix=-cli,latest=false
-
+          flavor: |
+            latest=false
       - name: Login to image repository
         if: github.ref_type == 'tag'
         uses: docker/login-action@v2
