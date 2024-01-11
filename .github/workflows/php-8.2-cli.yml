@@ -25,8 +25,7 @@ jobs:
         with:
           images: ghcr.io/chrecht/docker-library/php
           tags: |
-            type=semver,pattern={{version}}
-            suffix=-cli
+            type=semver,pattern={{version}},suffix=-cli
 
       - name: Login to image repository
         if: github.ref_type == 'tag'
