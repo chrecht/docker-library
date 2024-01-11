@@ -3,7 +3,7 @@ name: Build & Push
 on:
   push:
     tags:
-      - "php-v*"
+      - "v*"
   # pull_request:
   #   branches:
   #     - "main"
@@ -26,9 +26,10 @@ jobs:
           images: ghcr.io/chrecht/docker-library/php
           flavor: |
             latest=auto
-            prefix=php-,onlatest=false
-            suffix=cli
-            
+            onlatest=false
+            type=semver,pattern={{version}}
+            suffix=-cli
+
       - name: Login to image repository
         if: github.ref_type == 'tag'
         uses: docker/login-action@v2
