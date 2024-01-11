@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  docker-cli:
+  docker-apache:
 
     runs-on: ubuntu-latest
 
@@ -22,7 +22,7 @@ jobs:
         with:
           images: ghcr.io/chrecht/docker-library/php
           tags: |
-            type=semver,pattern={{version}},suffix=-cli,latest=false
+            type=semver,pattern={{version}},suffix=-apache,latest=false
           flavor: |
             latest=false
       - name: Login to image repository
@@ -36,8 +36,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ./php/8.2/cli
-          file: ./php/8.2/cli/Dockerfile
+          context: ./php/8.2/apache
+          file: ./php/8.2/apache/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
