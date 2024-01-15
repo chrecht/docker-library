@@ -54,8 +54,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./php/${{ PHP_MAJOR_VERSION }}/apache
-          file: ./php/${{ PHP_MAJOR_VERSION }}/apache/Dockerfile
+          context: ./php/$PHP_MAJOR_VERSION/apache
+          file: ./php/$PHP_MAJOR_VERSION/apache/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -104,8 +104,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./php/${{ PHP_MAJOR_VERSION }}/cli
-          file: ./php/${{ PHP_MAJOR_VERSION }}/cli/Dockerfile
+          context: ./php/$PHP_MAJOR_VERSION/cli
+          file: ./php/$PHP_MAJOR_VERSION/cli/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -154,8 +154,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./php/${{ PHP_MAJOR_VERSION }}/fpm
-          file: ./php/${{ PHP_MAJOR_VERSION }}/fpm/Dockerfile
+          context: ./php/$PHP_MAJOR_VERSION/fpm
+          file: ./php/$PHP_MAJOR_VERSION/fpm/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
