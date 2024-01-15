@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - "v8.2.*"
+  workflow_dispatch:
+    tags:
+      description: 'Test scenario tags'
+      required: false
+      type: boolean
 
 jobs:
 
