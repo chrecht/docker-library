@@ -37,8 +37,8 @@ jobs:
         with:
           images: ghcr.io/chrecht/docker-library/php
           tags: |
-            type=semver,pattern={{ steps.get_version.outputs.VERSION }},suffix=-apache,latest=false
-            type=semver,pattern={{ steps.get_version.outputs.MAJOR }}.{{ steps.get_version.outputs.MINOR }},suffix=-apache,latest=false
+            type=raw,value={{ steps.get_version.outputs.VERSION }}-apache
+            type=raw,value={{ steps.get_version.outputs.MAJOR }}.{{ steps.get_version.outputs.MINOR }}-apache
           flavor: |
             latest=false
 
