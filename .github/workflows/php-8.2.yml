@@ -21,15 +21,16 @@ jobs:
         id: get_version
         run: |
           SEARCH_MAJOR=8.2
+          curl --silent https://packages.sury.org/php/dists/bullseye/main/binary-amd64/Packages | grep "Package: php${SEARCH_MAJOR}-cli$" -A 5 | grep Version | sed -En  's/^Version: ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p'
           latest=$(curl --silent https://packages.sury.org/php/dists/bullseye/main/binary-amd64/Packages | grep "Package: php${SEARCH_MAJOR}-cli$" -A 5 | grep Version | sed -En  's/^Version: ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
           ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+/\1/p')
           ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+/\1/p')
           ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/p')
 
-          echo "::set-output name=VERSION::$latest"
-          echo "::set-output name=MAJOR::$ver_major"
-          echo "::set-output name=MINOR::$ver_minor"
-          echo "::set-output name=PATCH::$ver_patch"
+          echo "VERSION=$latest" >> $GITHUB_OUTPUT
+          echo "MAJOR=$ver_major" >> $GITHUB_OUTPUT
+          echo "MINOR=$ver_minor" >> $GITHUB_OUTPUT
+          echo "PATCH=$ver_patch" >> $GITHUB_OUTPUT
 
       - name: Docker meta
         id: meta
