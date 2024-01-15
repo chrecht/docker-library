@@ -5,10 +5,6 @@ on:
     tags:
       - "v8.2.*"
   workflow_dispatch:
-    inputs:
-      manual:
-        description: 'Manual Build'
-        required: false
 
 jobs:
 
