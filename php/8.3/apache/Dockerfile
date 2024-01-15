@@ -96,6 +96,9 @@ RUN curl -O https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/de
     && echo "deb http://www.deb-multimedia.org bookworm-backports main" >> /etc/apt/sources.list \
     && apt-get update && apt-get install -y zip unzip wget imagemagick --no-install-recommends \
     && apt-get install -t bookworm-backports -y ffmpeg mediainfo  --no-install-recommends \
+    && apt-get autoremove -y \
+    && apt-get autoclean \
+    && apt-get clean \
     && rm -r /var/lib/apt/lists/*
 
 
@@ -111,6 +114,9 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
     && echo "Package: odbcinst1debian2:amd64\nPin: origin \"packages.microsoft.com\"\nPin-Priority: 100\n" >> /etc/apt/preferences.d/microsoft \
     && apt-get update \
     && apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev  --no-install-recommends \
+    && apt-get autoremove -y \
+    && apt-get autoclean \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pecl install sqlsrv pdo_sqlsrv \

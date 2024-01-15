@@ -26,12 +26,12 @@ else
 
 	echo ${latest} > ${BASEPATH}/.current
 
-    git add ${BASEPATH}/.current
-    git commit -F - <<EOF
-    Bump PHP version to ${latest}
+#     git add ${BASEPATH}/.current
+#     git commit -F - <<EOF
+#     Bump PHP version to ${latest}
 
-    https://www.php.net/ChangeLog-8.php#${latest}
-EOF
+#     https://www.php.net/ChangeLog-8.php#${latest}
+# EOF
 
 	for i in "${!REGISTRY[@]}"
 	do
