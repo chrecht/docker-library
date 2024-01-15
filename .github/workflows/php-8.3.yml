@@ -1,9 +1,9 @@
-name: PHP 8.2
+name: PHP 8.3
 
 on:
   push:
     tags:
-      - "v8.2.*"
+      - "v8.3.*"
   workflow_dispatch:
 
 env:
