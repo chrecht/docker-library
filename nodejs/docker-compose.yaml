@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+
+  node18:
+    build:
+      context: ./18
+      dockerfile: Dockerfile
+      #target: dev
+    platform: linux/amd64
+    ports:
+      - "8081:80"
+
