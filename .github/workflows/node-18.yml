@@ -27,6 +27,11 @@ jobs:
           ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+/\1/p')
           ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/p')
 
+          echo $latest
+          echo $ver_major
+          echo $ver_minor
+          echo $ver_patch
+
           echo "VERSION=$latest" >> $GITHUB_OUTPUT
           echo "MAJOR=$ver_major" >> $GITHUB_OUTPUT
           echo "MINOR=$ver_minor" >> $GITHUB_OUTPUT
