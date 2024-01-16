@@ -40,6 +40,7 @@ jobs:
           tags: |
             type=raw,value=${{ steps.get_version.outputs.VERSION }}
             type=raw,value=${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}
+            type=raw,value=${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}.${{ steps.get_version.outputs.PATCH }}
           flavor: |
             latest=false
 
