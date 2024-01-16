@@ -1,0 +1,60 @@
+name: node 18
+
+on:
+  workflow_dispatch:
+
+env:
+  MAJOR_VERSION: 18
+  BASEPATH: ./node/
+  IMAGE: ghcr.io/chrecht/docker-library/node
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get version
+        id: get_version
+        run: |
+          latest=$(curl -s "https://hub.docker.com/v2/repositories/library/node/tags?page_size=1000" | jq -r '.results|.[]|.name' | grep -Ei "^(${MAJOR_VERSION}.[0-9]\d*.[0-9]\d*)$" | head -1)
+          ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+/\1/p')
+          ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+/\1/p')
+          ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/p')
+
+          echo "VERSION=$latest" >> $GITHUB_OUTPUT
+          echo "MAJOR=$ver_major" >> $GITHUB_OUTPUT
+          echo "MINOR=$ver_minor" >> $GITHUB_OUTPUT
+          echo "PATCH=$ver_patch" >> $GITHUB_OUTPUT
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=${{ steps.get_version.outputs.VERSION }}
+            type=raw,value=${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}
+          flavor: |
+            latest=false
+
+      - name: Login to image repository
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.BASEPATH }}/${{ env.MAJOR_VERSION }}
+          file: ${{ env.BASEPATH }}/${{ env.MAJOR_VERSION }}/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

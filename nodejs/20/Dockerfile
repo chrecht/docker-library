@@ -1,4 +1,4 @@
-FROM node:18-bookworm
+FROM node:20-bookworm
 LABEL maintainer="Christian WALDBILLIG <christian@waldbillig.io>"
 LABEL org.opencontainers.image.source="https://github.com/chrecht/docker-library"
 

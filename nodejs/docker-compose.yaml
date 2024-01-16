@@ -11,3 +11,11 @@ services:
     ports:
       - "8081:80"
 
+  node20:
+    build:
+      context: ./20
+      dockerfile: Dockerfile
+      #target: dev
+    platform: linux/amd64
+    ports:
+      - "8081:80"
