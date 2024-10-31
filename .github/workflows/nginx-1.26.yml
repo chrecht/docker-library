@@ -1,14 +1,14 @@
-name: nginx 1.25
+name: nginx 1.26
 
 on:
   push:
     tags:
-      - "v1.25.*"
+      - "v1.26.*"
   workflow_dispatch:
 
 env:
-  NGINX_MAJOR_VERSION: 1.25
-  NGINX_TAG: mainline
+  NGINX_MAJOR_VERSION: 1.26
+  NGINX_TAG: stable
   NGINX_IMAGE: ghcr.io/chrecht/docker-library/nginx
 
 jobs:
