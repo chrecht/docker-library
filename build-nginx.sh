@@ -6,7 +6,7 @@ REGISTRY=("ghcr.io" "ghcr.io" "harbor.rtl.lu" "public.ecr.aws")
 REPOPATH=("chrecht" "rtl-lu" "rtl-lu" "a3b6l2m3")
 REPOIMAGE=("docker-library/nginx" "docker-nginx" "nginx" "rtldigital/nginx")
 
-VERSIONS=("1.25" "1.26" "1.27")
+VERSIONS=("1.26" "1.27")
 
 for v in "${!VERSIONS[@]}"
 do
