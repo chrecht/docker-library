@@ -8,17 +8,30 @@ function buildAndPush()
     VARIANT=$3
     MAJOR=$4
     MINOR=$5
+	PATCH=$6
 
-	REGISTRY=$6
-	REPOPATH=$7
-	REPOIMAGE=$8
+	REGISTRY=$7
+	REPOPATH=$8
+	REPOIMAGE=$9
+
+	if [ -z "${VARIANT}" ];
+	then
+		TAG1=${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}
+		TAG2=${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}
+		TAG3=${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}.${PATCH}
+	else
+		TAG1=${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}-${VARIANT}
+		TAG2=${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}-${VARIANT}
+		TAG3=${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}.${PATCH}-${VARIANT}
+	fi
 
 	docker buildx build \
 		--platform=linux/amd64 \
 		--pull \
 		--push \
-		-t ${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}-${VARIANT} \
-		-t ${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}-${VARIANT} \
+		-t ${TAG1} \
+		-t ${TAG2} \
+		-t ${TAG3} \
 		-f ${DOCKERFILE} --progress=plain ${CONTEXT}
 
 }
@@ -31,20 +44,46 @@ function build()
     VARIANT=$3
     MAJOR=$4
     MINOR=$5
+	PATCH=$6
 
-	REGISTRY=$6
-	REPOPATH=$7
-	REPOIMAGE=$8
+	REGISTRY=$7
+	REPOPATH=$8
+	REPOIMAGE=$9
+
+	if [ -z "${VARIANT}" ];
+	then
+		TAG1=${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}
+		TAG2=${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}
+		TAG3=${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}.${PATCH}
+	else
+		TAG1=${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}-${VARIANT}
+		TAG2=${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}-${VARIANT}
+		TAG3=${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}.${PATCH}-${VARIANT}
+	fi
 
 	docker buildx build \
 		--platform=linux/amd64 \
 		--pull \
-		-t ${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}-${VARIANT} \
-		-t ${REGISTRY}/${REPOPATH}/${REPOIMAGE}:${MAJOR}.${MINOR}-${VARIANT} \
+		-t ${TAG1} \
+		-t ${TAG2} \
+		-t ${TAG3} \
 		-f ${DOCKERFILE} --progress=plain ${CONTEXT}
 
 }
 
+
+get_latest_nginx_version()
+{
+
+	SEARCH_MAJOR=$1
+
+	latest=$(curl -s "https://hub.docker.com/v2/repositories/library/nginx/tags?page_size=100&name=${SEARCH_MAJOR}." | jq -r '.results|.[]|.name' | grep -Ei "^(${SEARCH_MAJOR}.[0-9]+)$" | head -1)
+	
+	ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+/\1/p')
+	ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+/\1/p')
+	ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/p')
+
+}
 
 get_latest_php_version()
 {
@@ -58,6 +97,20 @@ get_latest_php_version()
 	ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/p')
 
 }
+
+get_latest_node_version()
+{
+
+	SEARCH_MAJOR=$1
+
+	latest=$(curl -s "https://hub.docker.com/v2/repositories/library/node/tags?page_size=100&name=${SEARCH_MAJOR}." | jq -r '.results|.[]|.name' | grep -Ei "^(${SEARCH_MAJOR}.[0-9]+.[0-9]+)$" | head -1)
+	
+	ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+/\1/p')
+	ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+/\1/p')
+	ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/p')
+
+}
+
 
 is_latest() {
     

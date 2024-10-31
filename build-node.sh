@@ -4,17 +4,17 @@
 
 REGISTRY=("ghcr.io" "ghcr.io" "harbor.rtl.lu" "public.ecr.aws")
 REPOPATH=("chrecht" "rtl-lu" "rtl-lu" "a3b6l2m3")
-REPOIMAGE=("docker-library/nginx" "docker-nginx" "nginx" "rtldigital/nginx")
+REPOIMAGE=("docker-library/node" "docker-node" "node" "rtldigital/node")
 
-VERSIONS=("1.25" "1.26" "1.27")
+NODEVERSIONS=("18" "20" "22")
 
-for v in "${!VERSIONS[@]}"
+for v in "${!NODEVERSIONS[@]}"
 do
 
-	BASEPATH=./nginx/${VERSIONS[$v]}
+	BASEPATH=./node/${NODEVERSIONS[$v]}
 
-	get_latest_nginx_version ${VERSIONS[$v]}
-	echo "Latest Nginx version: ${latest}"
+	get_latest_node_version ${NODEVERSIONS[$v]}
+	echo "Latest Node version: ${latest}"
 
 	for i in "${!REGISTRY[@]}"
 	do
