@@ -12,3 +12,13 @@
 [![node 20](https://github.com/chrecht/docker-library/actions/workflows/node-20.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/node-20.yml)
 
 [![node 22](https://github.com/chrecht/docker-library/actions/workflows/node-22.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/node-22.yml)
+
+
+
+# create builder
+docker buildx create \
+  --name container \
+  --driver=docker-container
+
+# clear builder cache
+docker builder --builder=container prune -af

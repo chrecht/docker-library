@@ -26,7 +26,8 @@ function buildAndPush()
 	fi
 
 	docker buildx build \
-		--platform=linux/amd64 \
+		--platform=linux/amd64,linux/arm64 \
+		--builder=container \
 		--pull \
 		--push \
 		-t ${TAG1} \
