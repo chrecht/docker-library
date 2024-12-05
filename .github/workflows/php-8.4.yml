@@ -12,7 +12,7 @@ env:
 jobs:
   latest-version:
     outputs:
-      VERSION: ${{ steps.get_version.outputs.VERSION }
+      VERSION: ${{ steps.get_version.outputs.VERSION }}
       MAJOR: ${{ steps.get_version.outputs.MAJOR }}
       MINOR: ${{ steps.get_version.outputs.MINOR }}
       PATCH: ${{ steps.get_version.outputs.PATCH }}
@@ -42,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      VERSION: ${{ needs.latest-version.outputs.VERSION }
+      VERSION: ${{ needs.latest-version.outputs.VERSION }}
       MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
       MINOR: ${{ needs.latest-version.outputs.MINOR }}
       PATCH: ${{ needs.latest-version.outputs.PATCH }}
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      VERSION: ${{ needs.latest-version.outputs.VERSION }
+      VERSION: ${{ needs.latest-version.outputs.VERSION }}
       MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
       MINOR: ${{ needs.latest-version.outputs.MINOR }}
       PATCH: ${{ needs.latest-version.outputs.PATCH }}
