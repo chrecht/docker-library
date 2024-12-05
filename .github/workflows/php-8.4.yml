@@ -37,7 +37,7 @@ jobs:
     strategy:
       matrix:
         variant: ["apache", "cli", "fpm"]
-        os: ["x64", "arm64"]
+        os: ["amd64", "arm64"]
 
     runs-on: ${{ matrix.os }}
 
