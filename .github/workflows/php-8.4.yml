@@ -1,0 +1,117 @@
+name: PHP 8.4
+
+on:
+  push:
+    tags:
+      - "v8.4.*"
+  workflow_dispatch:
+
+env:
+  PHP_MAJOR_VERSION: 8.4
+
+jobs:
+  latest-version:
+    outputs:
+      VERSION: ${{ steps.get_version.outputs.VERSION }
+      MAJOR: ${{ steps.get_version.outputs.MAJOR }}
+      MINOR: ${{ steps.get_version.outputs.MINOR }}
+      PATCH: ${{ steps.get_version.outputs.PATCH }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get version
+        id: get_version
+        run: |
+          latest=$(curl --silent https://packages.sury.org/php/dists/bullseye/main/binary-amd64/Packages | grep "Package: libapache2-mod-php${PHP_MAJOR_VERSION}$" -A 5 | grep Version | sed -En  's/^Version: ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
+          ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+/\1/p')
+          ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+/\1/p')
+          ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/p')
+
+          echo "VERSION=$latest" >> $GITHUB_OUTPUT
+          echo "MAJOR=$ver_major" >> $GITHUB_OUTPUT
+          echo "MINOR=$ver_minor" >> $GITHUB_OUTPUT
+          echo "PATCH=$ver_patch" >> $GITHUB_OUTPUT
+
+  build:
+    needs: latest-version
+
+    strategy:
+      matrix:
+        variant: ["apache", "cli", "fpm"]
+        os: ["x64", "arm64"]
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      VERSION: ${{ needs.latest-version.outputs.VERSION }
+      MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
+      MINOR: ${{ needs.latest-version.outputs.MINOR }}
+      PATCH: ${{ needs.latest-version.outputs.PATCH }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/chrecht/docker-library/php
+          tags: |
+            type=raw,value=${{ env.VERSION }}-${{ matrix.variant }}-${{ matrix.os }}
+            type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }}-${{ matrix.os }}
+          flavor: |
+            latest=false
+
+      - name: Login to image repository
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./php/${{ env.PHP_MAJOR_VERSION }}/${{ matrix.variant }}
+          file: ./php/${{ env.PHP_MAJOR_VERSION }}/${{ matrix.variant }}/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  create-multiarch-manifests:
+    needs: build
+
+    strategy:
+      matrix:
+        variant: ["apache", "cli", "fpm"]
+
+    runs-on: ubuntu-latest
+
+    env:
+      VERSION: ${{ needs.latest-version.outputs.VERSION }
+      MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
+      MINOR: ${{ needs.latest-version.outputs.MINOR }}
+      PATCH: ${{ needs.latest-version.outputs.PATCH }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Create multiarch manifests
+        run: |
+          docker buildx imagetools create \
+            -t ${{ env.VERSION }}-${{ matrix.variant }} \
+            -t ${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
+            ${{ env.VERSION }}-${{ matrix.variant }}-x64 \
+            ${{ env.VERSION }}-${{ matrix.variant }}-arm64
+          docker manifest push ${{ env.VERSION }}-${{ matrix.variant }}
+          docker manifest push ${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }}
+

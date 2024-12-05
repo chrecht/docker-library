@@ -19,7 +19,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN addgroup --gid 667 site \
  && adduser --disabled-password --gecos '' --home /var/www --shell "/sbin/nologin" --uid 667 --gid 667 site \
  && mkdir -p /var/www/html \
- && chown site.site -R /var/www
+ && chown site:site -R /var/www
 
 #####################
 # PHP from sury.org
@@ -138,12 +138,12 @@ COPY apache2/sites-enabled/* /etc/apache2/sites-enabled/
 # cleanup /var/www/html folder
 RUN rm -rf /var/www/html \
     && mkdir -p /var/www/html \
-    && chown site.site -R /var/www
+    && chown site:site -R /var/www
 
 
 RUN a2enmod remoteip rewrite headers setenvif
 
-RUN chown site.site -R /etc/apache2/sites-enabled/*
+RUN chown site:site -R /etc/apache2/sites-enabled/*
 
 ## allow apache to use port 80
 RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2

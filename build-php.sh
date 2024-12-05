@@ -8,7 +8,7 @@ REPOPATH=("chrecht" "rtl-lu" "rtl-lu" "a3b6l2m3")
 REPOIMAGE=("docker-library/php" "docker-php" "php" "rtldigital/php")
 
 #PHPVERSIONS=("8.2" "8.3" "8.4")
-PHPVERSIONS=("8.3" "8.2")
+PHPVERSIONS=("8.4")
 
 for v in "${!PHPVERSIONS[@]}"
 do

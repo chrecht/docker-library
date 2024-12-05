@@ -17,7 +17,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN addgroup --gid 667 site \
  && adduser --disabled-password --gecos '' --home /var/www --shell "/sbin/nologin" --uid 667 --gid 667 site \
  && mkdir -p /var/www/html \
- && chown site.site -R /var/www
+ && chown site:site -R /var/www
 
 #####################
 # PHP from sury.org
@@ -119,7 +119,7 @@ RUN pecl install sqlsrv pdo_sqlsrv \
 
 RUN ln -s /usr/sbin/php-fpm8.3 /usr/sbin/php-fpm \
     && mkdir -p /run/php/ \
-    && chown site.site -R /run/php
+    && chown site:site -R /run/php
 
 COPY scripts/* /usr/local/bin/
 COPY conf.d/* /etc/php/8.3/fpm/conf.d/

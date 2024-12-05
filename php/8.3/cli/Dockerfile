@@ -17,7 +17,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN addgroup --gid 667 site \
  && adduser --disabled-password --gecos '' --home /var/www --shell "/sbin/nologin" --uid 667 --gid 667 site \
  && mkdir -p /var/www/html \
- && chown site.site -R /var/www
+ && chown site:site -R /var/www
 
 #####################
 # PHP from sury.org
