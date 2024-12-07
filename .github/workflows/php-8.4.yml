@@ -80,7 +80,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          platform: linux/${{ matrix.arch }}
+          platforms: linux/${{ matrix.arch }}
           context: ./php/${{ env.PHP_MAJOR_VERSION }}/${{ matrix.variant }}
           file: ./php/${{ env.PHP_MAJOR_VERSION }}/${{ matrix.variant }}/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
