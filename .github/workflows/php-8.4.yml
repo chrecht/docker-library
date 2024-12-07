@@ -8,6 +8,7 @@ on:
 
 env:
   PHP_MAJOR_VERSION: 8.4
+  REGISTRY: ghcr.io/chrecht/docker-library/php
 
 jobs:
   latest-version:
@@ -62,7 +63,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/chrecht/docker-library/php
+          images: ${{ env.REGISTRY }}
           tags: |
             type=raw,value=${{ env.VERSION }}-${{ matrix.variant }}-${{ matrix.arch }}
             type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }}-${{ matrix.arch }}
@@ -109,10 +110,9 @@ jobs:
       - name: Create multiarch manifests
         run: |
           docker buildx imagetools create \
-            -t ${{ env.VERSION }}-${{ matrix.variant }} \
-            -t ${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
-            ${{ env.VERSION }}-${{ matrix.variant }}-amd64 \
-            ${{ env.VERSION }}-${{ matrix.variant }}-arm64
-          docker manifest push ${{ env.VERSION }}-${{ matrix.variant }}
-          docker manifest push ${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }}
-
+            -t ${{ env.REGISTRY }}:${{ env.VERSION }}-${{ matrix.variant }} \
+            -t ${{ env.REGISTRY }}:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
+            ${{ env.REGISTRY }}:${{ env.VERSION }}-${{ matrix.variant }}-amd64 \
+            ${{ env.REGISTRY }}:${{ env.VERSION }}-${{ matrix.variant }}-arm64
+          docker manifest push ${{ env.REGISTRY }}:${{ env.VERSION }}-${{ matrix.variant }}
+          docker manifest push ${{ env.REGISTRY }}:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }}
