@@ -90,7 +90,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   create-multiarch-manifests:
-    needs: build
+    needs: [ "latest-version", "build" ]
 
     strategy:
       matrix:
