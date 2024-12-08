@@ -78,6 +78,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build and push
+        id: build-and-push
         uses: docker/build-push-action@v6
         with:
           platforms: linux/${{ matrix.arch }}
@@ -86,11 +87,29 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-${{ matrix.arch }}-${{ matrix.variant }}
+          cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-${{ matrix.arch }}-${{ matrix.variant }}
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests/${{ matrix.variant }}
+          digest="${{ steps.build-and-push.outputs.digest }}"
+          touch "/tmp/digests/${{ matrix.variant }}/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.variant }}-digests
+          path: /tmp/digests/${{ matrix.variant }}/*
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Clear digest
+        run: |
+          rm -rf /tmp/digests/${{ matrix.variant }}
 
   create-multiarch-manifests:
-    needs: [ "latest-version", "build" ]
+    needs: ["latest-version", "build"]
 
     strategy:
       matrix:
@@ -109,6 +128,12 @@ jobs:
         shell: bash
 
     steps:
+
+      - name: Download digests
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.variant }}-digests
+          path: /tmp/digests/${{ matrix.variant }}
 
       - name: Login to image repository
         uses: docker/login-action@v3
