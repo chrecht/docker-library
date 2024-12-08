@@ -8,18 +8,17 @@ on:
 
 env:
   PHP_MAJOR_VERSION: 8.2
+  REGISTRY: ghcr.io/chrecht/docker-library/php
 
 jobs:
-
-  docker-apache:
-
+  latest-version:
+    outputs:
+      VERSION: ${{ steps.get_version.outputs.VERSION }}
+      MAJOR: ${{ steps.get_version.outputs.MAJOR }}
+      MINOR: ${{ steps.get_version.outputs.MINOR }}
+      PATCH: ${{ steps.get_version.outputs.PATCH }}
     runs-on: ubuntu-latest
-
     steps:
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Get version
         id: get_version
         run: |
@@ -33,68 +32,45 @@ jobs:
           echo "MINOR=$ver_minor" >> $GITHUB_OUTPUT
           echo "PATCH=$ver_patch" >> $GITHUB_OUTPUT
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/chrecht/docker-library/php
-          tags: |
-            type=raw,value=${{ steps.get_version.outputs.VERSION }}-apache
-            type=raw,value=${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}-apache
-          flavor: |
-            latest=false
+  build:
+    needs: latest-version
 
-      - name: Login to image repository
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: ./php/${{ env.PHP_MAJOR_VERSION }}/apache
-          file: ./php/${{ env.PHP_MAJOR_VERSION }}/apache/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-  docker-cli:
+    strategy:
+      matrix:
+        variant: ["apache", "cli", "fpm"]
+        arch: ["amd64", "arm64"]
 
     runs-on: ubuntu-latest
 
-    steps:
+    env:
+      VERSION: ${{ needs.latest-version.outputs.VERSION }}
+      MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
+      MINOR: ${{ needs.latest-version.outputs.MINOR }}
+      PATCH: ${{ needs.latest-version.outputs.PATCH }}
 
+    defaults:
+      run:
+        shell: bash
+
+    steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Get version
-        id: get_version
-        run: |
-          latest=$(curl --silent https://packages.sury.org/php/dists/bullseye/main/binary-amd64/Packages | grep "Package: php${PHP_MAJOR_VERSION}-cli$" -A 5 | grep Version | sed -En  's/^Version: ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
-          ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+/\1/p')
-          ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+/\1/p')
-          ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/p')
-
-          echo "VERSION=$latest" >> $GITHUB_OUTPUT
-          echo "MAJOR=$ver_major" >> $GITHUB_OUTPUT
-          echo "MINOR=$ver_minor" >> $GITHUB_OUTPUT
-          echo "PATCH=$ver_patch" >> $GITHUB_OUTPUT
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/chrecht/docker-library/php
+          images: ${{ env.REGISTRY }}
           tags: |
-            type=raw,value=${{ steps.get_version.outputs.VERSION }}-cli
-            type=raw,value=${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}-cli
+            type=raw,value=${{ env.VERSION }}-${{ matrix.variant }}-${{ matrix.arch }}
+            type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }}-${{ matrix.arch }}
           flavor: |
             latest=false
 
       - name: Login to image repository
-        #if: github.ref_type == 'tag'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -102,60 +78,50 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        id: build-and-push
+        uses: docker/build-push-action@v6
         with:
-          context: ./php/${{ env.PHP_MAJOR_VERSION }}/cli
-          file: ./php/${{ env.PHP_MAJOR_VERSION }}/cli/Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          context: ./php/${{ env.PHP_MAJOR_VERSION }}/${{ matrix.variant }}
+          file: ./php/${{ env.PHP_MAJOR_VERSION }}/${{ matrix.variant }}/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-php-${{ env.VERSION }}-${{ matrix.arch }}-${{ matrix.variant }}
+          cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-php-${{ env.VERSION }}-${{ matrix.arch }}-${{ matrix.variant }}
 
-  docker-fpm:
+  create-multiarch-manifests:
+    needs: ["latest-version", "build"]
+
+    strategy:
+      matrix:
+        variant: ["apache", "cli", "fpm"]
 
     runs-on: ubuntu-latest
 
+    env:
+      VERSION: ${{ needs.latest-version.outputs.VERSION }}
+      MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
+      MINOR: ${{ needs.latest-version.outputs.MINOR }}
+      PATCH: ${{ needs.latest-version.outputs.PATCH }}
+
+    defaults:
+      run:
+        shell: bash
+
     steps:
 
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Get version
-        id: get_version
-        run: |
-          latest=$(curl --silent https://packages.sury.org/php/dists/bullseye/main/binary-amd64/Packages | grep "Package: php${PHP_MAJOR_VERSION}-fpm$" -A 5 | grep Version | sed -En  's/^Version: ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
-          ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+/\1/p')
-          ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+/\1/p')
-          ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/p')
-
-          echo "VERSION=$latest" >> $GITHUB_OUTPUT
-          echo "MAJOR=$ver_major" >> $GITHUB_OUTPUT
-          echo "MINOR=$ver_minor" >> $GITHUB_OUTPUT
-          echo "PATCH=$ver_patch" >> $GITHUB_OUTPUT
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/chrecht/docker-library/php
-          tags: |
-            type=raw,value=${{ steps.get_version.outputs.VERSION }}-fpm
-            type=raw,value=${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}-fpm
-          flavor: |
-            latest=false
-
       - name: Login to image repository
-        #if: github.ref_type == 'tag'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: ./php/${{ env.PHP_MAJOR_VERSION }}/fpm
-          file: ./php/${{ env.PHP_MAJOR_VERSION }}/fpm/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+      - name: Create multiarch manifests
+        run: |
+          docker buildx imagetools create \
+            -t ${{ env.REGISTRY }}:${{ env.VERSION }}-${{ matrix.variant }} \
+            -t ${{ env.REGISTRY }}:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
+            ${{ env.REGISTRY }}:${{ env.VERSION }}-${{ matrix.variant }}-amd64 \
+            ${{ env.REGISTRY }}:${{ env.VERSION }}-${{ matrix.variant }}-arm64

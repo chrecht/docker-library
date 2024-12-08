@@ -17,7 +17,7 @@ jobs:
       MAJOR: ${{ steps.get_version.outputs.MAJOR }}
       MINOR: ${{ steps.get_version.outputs.MINOR }}
       PATCH: ${{ steps.get_version.outputs.PATCH }}
-    runs-on: [self-hosted, linux]
+    runs-on: ubuntu-latest
     steps:
       - name: Get version
         id: get_version
@@ -40,7 +40,7 @@ jobs:
         variant: ["apache", "cli", "fpm"]
         arch: ["amd64", "arm64"]
 
-    runs-on: [self-hosted, linux]
+    runs-on: ubuntu-latest
 
     env:
       VERSION: ${{ needs.latest-version.outputs.VERSION }}
@@ -97,7 +97,7 @@ jobs:
       matrix:
         variant: ["apache", "cli", "fpm"]
 
-    runs-on: [self-hosted, linux]
+    runs-on: ubuntu-latest
 
     env:
       VERSION: ${{ needs.latest-version.outputs.VERSION }}
