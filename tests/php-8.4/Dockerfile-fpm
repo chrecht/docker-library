@@ -1,6 +1,6 @@
-FROM ghcr.io/chrecht/docker-library/php:8.4-fpm as base
+FROM ghcr.io/chrecht/docker-library/php:8.4-fpm AS base
 
-FROM base as dev
+FROM base AS dev
 
 USER root
 RUN dev.sh

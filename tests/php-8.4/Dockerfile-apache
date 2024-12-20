@@ -1,8 +1,7 @@
-FROM ghcr.io/chrecht/docker-library/php:8.4-apache as base
+FROM ghcr.io/chrecht/docker-library/php:8.4-apache AS base
 
-FROM base as dev
+FROM base AS dev
 
 USER root
-COPY conf/zz_override.conf /etc/apache2/conf-enabled/
 RUN dev.sh
 USER site
