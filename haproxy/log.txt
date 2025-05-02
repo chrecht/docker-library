@@ -1,0 +1,47 @@
+{
+    "timestamp": "%t",
+    "source": {
+        "address": "%ci",
+        "ip": "%ci",
+        "port": "%cp",
+        "bytes": %B
+    },
+    "destination": {
+        "address": "%fi",
+        "port": "%fp",
+        "bytes": %U
+    },
+    "http": {
+        "version": "%HV",
+        "duration": %Tt,
+        "request": {
+            "bytes": "%B",
+            "id": "%ID",
+            "method": "%HM",
+            "referrer": "$http_referer",
+            "x_forwarded_for": "$http_x_forwarded_for",
+        },
+        "response": {
+            "bytes": %U,
+            "status_code": %ST,
+        }
+    },
+    "url": {
+        "full": "%r",
+        "domain": "$host",
+        "path": "%HP",
+        "query": "%HQ",
+        "username": "$remote_user"
+    },
+    "user_agent": {
+        "original": "$http_user_agent"
+    },
+    "event": {
+        "kind": "event",
+        "category": "web",
+        "type": "access",
+        "dataset": "nginx.access",
+        "duration": $request_time_nanos
+    }
+}
+
