@@ -1,13 +1,13 @@
-name: nginx 1.26
+name: nginx 1.28
 
 on:
   push:
     tags:
-      - "v1.26.*"
+      - "v1.28.*"
   workflow_dispatch:
 
 env:
-  NGINX_MAJOR_VERSION: 1.26
+  NGINX_MAJOR_VERSION: 1.28
   NGINX_TAG: stable
   NGINX_IMAGE: ghcr.io/chrecht/docker-library/nginx
 

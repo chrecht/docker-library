@@ -1,4 +1,4 @@
-FROM nginx:1.26-bookworm
+FROM nginx:1.28-bookworm
 LABEL maintainer="Christian WALDBILLIG <christian@waldbillig.io>"
 LABEL org.opencontainers.image.source="https://github.com/chrecht/docker-library"
 
