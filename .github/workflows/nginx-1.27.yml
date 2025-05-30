@@ -15,10 +15,10 @@ jobs:
 
   latest-version:
     outputs:
-      VERSION: ${{ env.VERSION }}
-      MAJOR: ${{ env.MAJOR }}
-      MINOR: ${{ env.MINOR }}
-      PATCH: ${{ env.PATCH }}
+      VERSION: ${{ steps.get_version.outputs.VERSION }}
+      MAJOR: ${{ steps.get_version.outputs.MAJOR }}
+      MINOR: ${{ steps.get_version.outputs.MINOR }}
+      PATCH: ${{ steps.get_version.outputs.PATCH }}
     runs-on: ubuntu-latest
     steps:
       - name: Get version
