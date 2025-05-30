@@ -3,6 +3,8 @@
 
 [![PHP 8.3](https://github.com/chrecht/docker-library/actions/workflows/php-8.3.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/php-8.3.yml)
 
+[![PHP 8.4](https://github.com/chrecht/docker-library/actions/workflows/php-8.4.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/php-8.4.yml)
+
 [![nginx 1.27 - mainline](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.27.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.27.yml)
 
 [![nginx 1.28 - stable](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.28.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.28.yml)
