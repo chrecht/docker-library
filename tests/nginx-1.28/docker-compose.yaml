@@ -1,0 +1,10 @@
+
+services:
+
+  nginx:
+    build: 
+      context: ../../nginx/1.28
+    ports:
+      - "8080:80"
+    volumes:
+      - ./html:/var/www/html

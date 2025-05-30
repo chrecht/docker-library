@@ -13,15 +13,14 @@ env:
 
 jobs:
 
-  build:
-
+  latest-version:
+    outputs:
+      VERSION: ${{ env.VERSION }}
+      MAJOR: ${{ env.MAJOR }}
+      MINOR: ${{ env.MINOR }}
+      PATCH: ${{ env.PATCH }}
     runs-on: ubuntu-latest
-
     steps:
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Get version
         id: get_version
         run: |
@@ -35,16 +34,40 @@ jobs:
           echo "MINOR=$ver_minor" >> $GITHUB_OUTPUT
           echo "PATCH=$ver_patch" >> $GITHUB_OUTPUT
 
+  build:
+
+    needs: latest-version
+
+    strategy:
+      matrix:
+        arch: ["amd64", "arm64"]
+
+    runs-on: ubuntu-latest
+    
+    env:
+      VERSION: ${{ needs.latest-version.outputs.VERSION }}
+      MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
+      MINOR: ${{ needs.latest-version.outputs.MINOR }}
+      PATCH: ${{ needs.latest-version.outputs.PATCH }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.NGINX_IMAGE }}
           tags: |
-            type=raw,value=${{ steps.get_version.outputs.VERSION }}
-            type=raw,value=${{ steps.get_version.outputs.VERSION }}-${{ env.NGINX_TAG }}
-            type=raw,value=${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}
-            type=raw,value=${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}-${{ env.NGINX_TAG }}
+            type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.arch }}
           flavor: |
             latest=false
 
@@ -58,8 +81,54 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
+          platforms: linux/${{ matrix.arch }}
           context: ./nginx/${{ env.NGINX_MAJOR_VERSION }}
           file: ./nginx/${{ env.NGINX_MAJOR_VERSION }}/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-nginx-${{ env.VERSION }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-nginx-${{ env.VERSION }}-${{ matrix.arch }}
+
+      - name: Registry cleanup of untagged containers
+        uses: actions/delete-package-versions@v5
+        with: 
+          package-name: 'docker-library/nginx'
+          package-type: 'container'
+          min-versions-to-keep: 0
+          delete-only-untagged-versions: 'true'
+          token: ${{ secrets.GHCR_TOKEN }}
+
+
+  create-multiarch-manifests:
+    needs: ["latest-version", "build"]
+
+    runs-on: ubuntu-latest
+
+    env:
+      MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
+      MINOR: ${{ needs.latest-version.outputs.MINOR }}
+      PATCH: ${{ needs.latest-version.outputs.PATCH }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+
+      - name: Login to image repository
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Create multiarch manifests
+        run: |
+          docker buildx imagetools create \
+            -t ${{ env.NGINX_IMAGE }}:${{ env.NGINX_TAG }} \
+            -t ${{ env.NGINX_IMAGE }}:${{ env.MAJOR }} \
+            -t ${{ env.NGINX_IMAGE }}:${{ env.MAJOR }}.${{ env.MINOR }} \
+            -t ${{ env.NGINX_IMAGE }}:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
+            ${{ env.NGINX_IMAGE }}:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
+            ${{ env.NGINX_IMAGE }}:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64

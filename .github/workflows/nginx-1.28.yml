@@ -41,6 +41,7 @@ jobs:
         with:
           images: ${{ env.NGINX_IMAGE }}
           tags: |
+            type=raw,value=${{ env.NGINX_TAG }}
             type=raw,value=${{ steps.get_version.outputs.VERSION }}
             type=raw,value=${{ steps.get_version.outputs.VERSION }}-${{ env.NGINX_TAG }}
             type=raw,value=${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}
