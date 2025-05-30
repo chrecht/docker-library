@@ -8,7 +8,7 @@ on:
 
 env:
   PHP_MAJOR_VERSION: 8.4
-  REGISTRY: ghcr.io/chrecht/docker-library/php
+
 
 jobs:
   latest-version:
@@ -63,19 +63,29 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}
+          images: |
+            ${{ secrets.REGISTRY1_BASE }}php
+            ${{ secrets.REGISTRY2_BASE }}php
           tags: |
-            type=raw,value=${{ env.VERSION }}-${{ matrix.variant }}-${{ matrix.arch }}
-            type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }}-${{ matrix.arch }}
+            type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-${{ matrix.arch }}
           flavor: |
             latest=false
 
-      - name: Login to image repository
+
+      - name: Login to Registry 1
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          registry: ${{ secrets.REGISTRY1_HOSTNAME }}
+          username: ${{ secrets.REGISTRY1_USERNAME }}
+          password: ${{ secrets.REGISTRY1_PASSWORD }}
+
+
+      - name: Login to Registry 2
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY2_HOSTNAME }}
+          username: ${{ secrets.REGISTRY2_USERNAME }}
+          password: ${{ secrets.REGISTRY2_PASSWORD }}
 
       - name: Build and push
         id: build-and-push
@@ -111,17 +121,34 @@ jobs:
 
     steps:
 
-      - name: Login to image repository
+      - name: Login to Registry 1
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          registry: ${{ secrets.REGISTRY1_HOSTNAME }}
+          username: ${{ secrets.REGISTRY1_USERNAME }}
+          password: ${{ secrets.REGISTRY1_PASSWORD }}
 
-      - name: Create multiarch manifests
+
+      - name: Login to Registry 2
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY2_HOSTNAME }}
+          username: ${{ secrets.REGISTRY2_USERNAME }}
+          password: ${{ secrets.REGISTRY2_PASSWORD }}
+
+
+      - name: Create multiarch manifests - registry 1
         run: |
           docker buildx imagetools create \
-            -t ${{ env.REGISTRY }}:${{ env.VERSION }}-${{ matrix.variant }} \
-            -t ${{ env.REGISTRY }}:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
-            ${{ env.REGISTRY }}:${{ env.VERSION }}-${{ matrix.variant }}-amd64 \
-            ${{ env.REGISTRY }}:${{ env.VERSION }}-${{ matrix.variant }}-arm64
+            -t ${{ secrets.REGISTRY1_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
+            -t ${{ secrets.REGISTRY1_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
+            ${{ secrets.REGISTRY1_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
+            ${{ secrets.REGISTRY1_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
+
+      - name: Create multiarch manifests - registry 2
+        run: |
+          docker buildx imagetools create \
+            -t ${{ secrets.REGISTRY2_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
+            -t ${{ secrets.REGISTRY2_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
+            ${{ secrets.REGISTRY2_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
+            ${{ secrets.REGISTRY2_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
