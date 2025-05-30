@@ -90,16 +90,6 @@ jobs:
           cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-nginx-${{ env.VERSION }}-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-nginx-${{ env.VERSION }}-${{ matrix.arch }}
 
-      - name: Registry cleanup of untagged containers
-        uses: actions/delete-package-versions@v5
-        with: 
-          package-name: 'docker-library/nginx'
-          package-type: 'container'
-          min-versions-to-keep: 0
-          delete-only-untagged-versions: 'true'
-          token: ${{ secrets.GHCR_TOKEN }}
-
-
   create-multiarch-manifests:
     needs: ["latest-version", "build"]
 
