@@ -5,20 +5,18 @@ on:
 
 env:
   MAJOR_VERSION: 18
-  BASEPATH: ./node
-  IMAGE: ghcr.io/chrecht/docker-library/node
+
 
 jobs:
 
-  build:
-
+  latest-version:
+    outputs:
+      VERSION: ${{ steps.get_version.outputs.VERSION }}
+      MAJOR: ${{ steps.get_version.outputs.MAJOR }}
+      MINOR: ${{ steps.get_version.outputs.MINOR }}
+      PATCH: ${{ steps.get_version.outputs.PATCH }}
     runs-on: ubuntu-latest
-
     steps:
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Get version
         id: get_version
         run: |
@@ -32,31 +30,119 @@ jobs:
           echo "MINOR=$ver_minor" >> $GITHUB_OUTPUT
           echo "PATCH=$ver_patch" >> $GITHUB_OUTPUT
 
+  build:
+
+    needs: latest-version
+
+    strategy:
+      matrix:
+        arch: ["amd64", "arm64"]
+
+    runs-on: ubuntu-latest
+    
+    env:
+      VERSION: ${{ needs.latest-version.outputs.VERSION }}
+      MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
+      MINOR: ${{ needs.latest-version.outputs.MINOR }}
+      PATCH: ${{ needs.latest-version.outputs.PATCH }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.IMAGE }}
+          images: |
+            ${{ secrets.REGISTRY1_BASE }}node
+            ${{ secrets.REGISTRY2_BASE }}node
           tags: |
-            type=raw,value=${{ steps.get_version.outputs.VERSION }}
-            type=raw,value=${{ steps.get_version.outputs.MAJOR }}
-            type=raw,value=${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}
-            type=raw,value=${{ steps.get_version.outputs.MAJOR }}.${{ steps.get_version.outputs.MINOR }}.${{ steps.get_version.outputs.PATCH }}
+            type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.arch }}
           flavor: |
             latest=false
 
-      - name: Login to image repository
+      - name: Login to Registry 1
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          registry: ${{ secrets.REGISTRY1_HOSTNAME }}
+          username: ${{ secrets.REGISTRY1_USERNAME }}
+          password: ${{ secrets.REGISTRY1_PASSWORD }}
+
+
+      - name: Login to Registry 2
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY2_HOSTNAME }}
+          username: ${{ secrets.REGISTRY2_USERNAME }}
+          password: ${{ secrets.REGISTRY2_PASSWORD }}
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
-          context: ${{ env.BASEPATH }}/${{ env.MAJOR_VERSION }}
-          file: ${{ env.BASEPATH }}/${{ env.MAJOR_VERSION }}/Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          context: ./node/${{ env.MAJOR_VERSION }}
+          file: ./node/${{ env.MAJOR_VERSION }}/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-node-${{ env.VERSION }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-node-${{ env.VERSION }}-${{ matrix.arch }}
+
+
+
+  create-multiarch-manifests:
+    needs: ["latest-version", "build"]
+
+    runs-on: ubuntu-latest
+
+    env:
+      MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
+      MINOR: ${{ needs.latest-version.outputs.MINOR }}
+      PATCH: ${{ needs.latest-version.outputs.PATCH }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+
+      - name: Login to Registry 1
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY1_HOSTNAME }}
+          username: ${{ secrets.REGISTRY1_USERNAME }}
+          password: ${{ secrets.REGISTRY1_PASSWORD }}
+
+
+      - name: Login to Registry 2
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY2_HOSTNAME }}
+          username: ${{ secrets.REGISTRY2_USERNAME }}
+          password: ${{ secrets.REGISTRY2_PASSWORD }}
+
+      - name: Create multiarch manifests - registry 1
+        run: |
+          docker buildx imagetools create \
+            -t ${{ secrets.REGISTRY1_BASE }}node:${{ env.MAJOR }} \
+            -t ${{ secrets.REGISTRY1_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }} \
+            -t ${{ secrets.REGISTRY1_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
+            ${{ secrets.REGISTRY1_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
+            ${{ secrets.REGISTRY1_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64
+
+      - name: Create multiarch manifests - registry 2
+        run: |
+          docker buildx imagetools create \
+            -t ${{ secrets.REGISTRY2_BASE }}node:${{ env.MAJOR }} \
+            -t ${{ secrets.REGISTRY2_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }} \
+            -t ${{ secrets.REGISTRY2_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
+            ${{ secrets.REGISTRY2_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
+            ${{ secrets.REGISTRY2_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64
