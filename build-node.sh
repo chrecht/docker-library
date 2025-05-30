@@ -2,9 +2,9 @@
 
 . ./functions.sh
 
-REGISTRY=("ghcr.io" "ghcr.io" "harbor.rtl.lu" "public.ecr.aws")
-REPOPATH=("chrecht" "rtl-lu" "rtl-lu" "a3b6l2m3")
-REPOIMAGE=("docker-library/node" "docker-node" "node" "rtldigital/node")
+REGISTRY=("ghcr.io")
+REPOPATH=("chrecht")
+REPOIMAGE=("docker-library/node")
 
 NODEVERSIONS=("18" "20" "22")
 

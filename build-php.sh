@@ -3,12 +3,11 @@ set -e
 
 . ./functions.sh
 
-REGISTRY=("ghcr.io" "ghcr.io" "harbor.rtl.lu" "public.ecr.aws")
-REPOPATH=("chrecht" "rtl-lu" "rtl-lu" "a3b6l2m3")
-REPOIMAGE=("docker-library/php" "docker-php" "php" "rtldigital/php")
+REGISTRY=("ghcr.io")
+REPOPATH=("chrecht")
+REPOIMAGE=("docker-library/php")
 
-#PHPVERSIONS=("8.2" "8.3" "8.4")
-PHPVERSIONS=("8.4")
+PHPVERSIONS=("8.2" "8.3" "8.4")
 
 for v in "${!PHPVERSIONS[@]}"
 do
