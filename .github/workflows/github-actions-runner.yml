@@ -74,19 +74,19 @@ jobs:
           file: ./github-actions-runner/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}
-            ${{ secrets.REGISTRY2_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}
-            ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.build_datetime.outputs.datetime }}
-            ${{ secrets.REGISTRY2_BASE }}github-actions-runner:${{ steps.build_datetime.outputs.datetime }}
+            ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
+            ${{ secrets.REGISTRY2_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
+            ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.build_datetime.outputs.datetime }}-${{ matrix.arch }}
+            ${{ secrets.REGISTRY2_BASE }}github-actions-runner:${{ steps.build_datetime.outputs.datetime }}-${{ matrix.arch }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-github-actions-runner-${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-github-actions-runner-${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
+
 
   create-multiarch-manifests:
     needs: ["build"]
 
     runs-on: ubuntu-latest
-
 
     defaults:
       run:
