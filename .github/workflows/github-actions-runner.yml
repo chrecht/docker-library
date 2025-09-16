@@ -34,8 +34,10 @@ jobs:
           images: |
             ${{ secrets.REGISTRY1_BASE }}github-actions-runner
             ${{ secrets.REGISTRY2_BASE }}github-actions-runner
+          tags: |
+            type=raw,value=${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
           flavor: |
-            latest=true
+            latest=false
 
       - name: Get git commit hash
         id: git_hash
@@ -107,8 +109,8 @@ jobs:
         run: |
           docker buildx imagetools create \
             -t ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }} \
-            -t ${{ secrets.REGISTRY1_BASE }}github-actions-runner:latest \
             -t ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.build_datetime.outputs.datetime }} \
+            -t ${{ secrets.REGISTRY1_BASE }}github-actions-runner:latest \
             ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}-amd64 \
             ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}-arm64
 
@@ -116,7 +118,7 @@ jobs:
         run: |
           docker buildx imagetools create \
             -t ${{ secrets.REGISTRY2_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }} \
-            -t ${{ secrets.REGISTRY2_BASE }}github-actions-runner:latest \
             -t ${{ secrets.REGISTRY2_BASE }}github-actions-runner:${{ steps.build_datetime.outputs.datetime }} \
+            -t ${{ secrets.REGISTRY2_BASE }}github-actions-runner:latest \
             ${{ secrets.REGISTRY2_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}-amd64 \
             ${{ secrets.REGISTRY2_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}-arm64
