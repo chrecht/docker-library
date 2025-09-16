@@ -60,8 +60,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/${{ matrix.arch }}
-          context: ./nginx/github-actions-runner
-          file: ./nginx/github-actions-runner/Dockerfile
+          context: ./github-actions-runner
+          file: ./github-actions-runner/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}
@@ -100,15 +100,15 @@ jobs:
       - name: Create multiarch manifests - registry 1
         run: |
           docker buildx imagetools create \
-            -t ${{ secrets.REGISTRY1_BASE }}nginx:${{ steps.git_hash.outputs.hash }} \
-            -t ${{ secrets.REGISTRY1_BASE }}nginx:latest \
-            ${{ secrets.REGISTRY1_BASE }}nginx:${{ steps.git_hash.outputs.hash }}-amd64 \
-            ${{ secrets.REGISTRY1_BASE }}nginx:${{ steps.git_hash.outputs.hash }}-arm64
+            -t ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }} \
+            -t ${{ secrets.REGISTRY1_BASE }}github-actions-runner:latest \
+            ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}-amd64 \
+            ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}-arm64
 
       - name: Create multiarch manifests - registry 2
         run: |
           docker buildx imagetools create \
-            -t ${{ secrets.REGISTRY2_BASE }}nginx:${{ steps.git_hash.outputs.hash }} \
-            -t ${{ secrets.REGISTRY2_BASE }}nginx:latest \
-            ${{ secrets.REGISTRY2_BASE }}nginx:${{ steps.git_hash.outputs.hash }}-amd64 \
-            ${{ secrets.REGISTRY2_BASE }}nginx:${{ steps.git_hash.outputs.hash }}-arm64
+            -t ${{ secrets.REGISTRY2_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }} \
+            -t ${{ secrets.REGISTRY2_BASE }}github-actions-runner:latest \
+            ${{ secrets.REGISTRY2_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}-amd64 \
+            ${{ secrets.REGISTRY2_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}-arm64
