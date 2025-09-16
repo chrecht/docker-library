@@ -1,0 +1,114 @@
+name: github actions runner
+
+on:
+  workflow_dispatch:
+
+env:
+  NAN: 1
+
+jobs:
+
+  build:
+
+    strategy:
+      matrix:
+        arch: ["amd64", "arm64"]
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ secrets.REGISTRY1_BASE }}github-actions-runner
+            ${{ secrets.REGISTRY2_BASE }}github-actions-runner
+          flavor: |
+            latest=true
+
+      - name: Get git commit hash
+        id: git_hash
+        run: echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Login to Registry 1
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY1_HOSTNAME }}
+          username: ${{ secrets.REGISTRY1_USERNAME }}
+          password: ${{ secrets.REGISTRY1_PASSWORD }}
+
+
+      - name: Login to Registry 2
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY2_HOSTNAME }}
+          username: ${{ secrets.REGISTRY2_USERNAME }}
+          password: ${{ secrets.REGISTRY2_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/${{ matrix.arch }}
+          context: ./nginx/github-actions-runner
+          file: ./nginx/github-actions-runner/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ secrets.REGISTRY1_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}
+            ${{ secrets.REGISTRY2_BASE }}github-actions-runner:${{ steps.git_hash.outputs.hash }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-github-actions-runner-${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-github-actions-runner-${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
+
+  create-multiarch-manifests:
+    needs: ["build"]
+
+    runs-on: ubuntu-latest
+
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+
+      - name: Login to Registry 1
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY1_HOSTNAME }}
+          username: ${{ secrets.REGISTRY1_USERNAME }}
+          password: ${{ secrets.REGISTRY1_PASSWORD }}
+
+
+      - name: Login to Registry 2
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY2_HOSTNAME }}
+          username: ${{ secrets.REGISTRY2_USERNAME }}
+          password: ${{ secrets.REGISTRY2_PASSWORD }}
+
+      - name: Create multiarch manifests - registry 1
+        run: |
+          docker buildx imagetools create \
+            -t ${{ secrets.REGISTRY1_BASE }}nginx:${{ steps.git_hash.outputs.hash }} \
+            -t ${{ secrets.REGISTRY1_BASE }}nginx:latest \
+            ${{ secrets.REGISTRY1_BASE }}nginx:${{ steps.git_hash.outputs.hash }}-amd64 \
+            ${{ secrets.REGISTRY1_BASE }}nginx:${{ steps.git_hash.outputs.hash }}-arm64
+
+      - name: Create multiarch manifests - registry 2
+        run: |
+          docker buildx imagetools create \
+            -t ${{ secrets.REGISTRY2_BASE }}nginx:${{ steps.git_hash.outputs.hash }} \
+            -t ${{ secrets.REGISTRY2_BASE }}nginx:latest \
+            ${{ secrets.REGISTRY2_BASE }}nginx:${{ steps.git_hash.outputs.hash }}-amd64 \
+            ${{ secrets.REGISTRY2_BASE }}nginx:${{ steps.git_hash.outputs.hash }}-arm64

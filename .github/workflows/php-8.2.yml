@@ -97,8 +97,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-php-${{ env.VERSION }}-${{ matrix.arch }}-${{ matrix.variant }}
-          cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-php-${{ env.VERSION }}-${{ matrix.arch }}-${{ matrix.variant }}
+          cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-php-${{ env.VERSION }}-${{ matrix.arch }}-${{ matrix.variant }}-a
+          cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-php-${{ env.VERSION }}-${{ matrix.arch }}-${{ matrix.variant }}-a
 
   create-multiarch-manifests:
     needs: ["latest-version", "build"]

@@ -23,7 +23,7 @@ do
 
 	for i in "${!REGISTRY[@]}"
 	do
-		echo " - [ " ${ver_major} ${ver_minor} ${ver_patch} ${REGISTRY[$i]} ${REPOPATH[$i]} ${REPOIMAGE[$i]} ${VARIANTNAME} " ]"
+		echo " - [ " ${ver_major} ${ver_minor} ${ver_patch} ${REGISTRY[$i]} ${REPOPATH[$i]} ${REPOIMAGE[$i]} ${VARIANTNAME} " ]"
 		buildAndPush ${BASEPATH}/Dockerfile ${BASEPATH} "" ${ver_major} ${ver_minor} ${ver_patch} ${REGISTRY[$i]} ${REPOPATH[$i]} ${REPOIMAGE[$i]} ${VARIANTNAME}
 	done
 
