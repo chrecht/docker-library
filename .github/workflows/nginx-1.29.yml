@@ -76,7 +76,7 @@ jobs:
         with:
           registry: cr.waldbillig.io
           username: ${{ gitea.actor }}
-          password: ${{ secrets.PAT_REGISTRY_PUSH }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -113,7 +113,7 @@ jobs:
         with:
           registry: cr.waldbillig.io
           username: ${{ gitea.actor }}
-          password: ${{ secrets.PAT_REGISTRY_PUSH }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create multiarch manifests - registry
         run: |
