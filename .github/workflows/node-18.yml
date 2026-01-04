@@ -62,27 +62,18 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ secrets.REGISTRY1_BASE }}node
-            ${{ secrets.REGISTRY2_BASE }}node
+            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/node
           tags: |
             type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.arch }}
           flavor: |
             latest=false
 
-      - name: Login to Registry 1
+      - name: Login to Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.REGISTRY1_HOSTNAME }}
-          username: ${{ secrets.REGISTRY1_USERNAME }}
-          password: ${{ secrets.REGISTRY1_PASSWORD }}
-
-
-      - name: Login to Registry 2
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.REGISTRY2_HOSTNAME }}
-          username: ${{ secrets.REGISTRY2_USERNAME }}
-          password: ${{ secrets.REGISTRY2_PASSWORD }}
+          registry: ${{ secrets.REGISTRY_HOST }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -114,35 +105,18 @@ jobs:
 
     steps:
 
-      - name: Login to Registry 1
+      - name: Login to Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.REGISTRY1_HOSTNAME }}
-          username: ${{ secrets.REGISTRY1_USERNAME }}
-          password: ${{ secrets.REGISTRY1_PASSWORD }}
+          registry: ${{ secrets.REGISTRY_HOST }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
 
-
-      - name: Login to Registry 2
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.REGISTRY2_HOSTNAME }}
-          username: ${{ secrets.REGISTRY2_USERNAME }}
-          password: ${{ secrets.REGISTRY2_PASSWORD }}
-
-      - name: Create multiarch manifests - registry 1
+      - name: Create multiarch manifests - registry
         run: |
           docker buildx imagetools create \
-            -t ${{ secrets.REGISTRY1_BASE }}node:${{ env.MAJOR }} \
-            -t ${{ secrets.REGISTRY1_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }} \
-            -t ${{ secrets.REGISTRY1_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
-            ${{ secrets.REGISTRY1_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
-            ${{ secrets.REGISTRY1_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64
-
-      - name: Create multiarch manifests - registry 2
-        run: |
-          docker buildx imagetools create \
-            -t ${{ secrets.REGISTRY2_BASE }}node:${{ env.MAJOR }} \
-            -t ${{ secrets.REGISTRY2_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }} \
-            -t ${{ secrets.REGISTRY2_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
-            ${{ secrets.REGISTRY2_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
-            ${{ secrets.REGISTRY2_BASE }}node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/node:${{ env.MAJOR }} \
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/node:${{ env.MAJOR }}.${{ env.MINOR }} \
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
+            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
+            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/node:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64
