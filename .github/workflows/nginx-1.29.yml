@@ -65,7 +65,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/nginx
+            cr.waldbillig.io/${{ github.repository }}/nginx
           tags: |
             type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.arch }}
           flavor: |
@@ -74,7 +74,7 @@ jobs:
       - name: Login to Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: cr.waldbillig.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -111,17 +111,17 @@ jobs:
       - name: Login to Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: cr.waldbillig.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create multiarch manifests - registry
         run: |
           docker buildx imagetools create \
-            -t ${{ env.REGISTRY }}/${{ github.repository }}/nginx:${{ env.NGINX_TAG }} \
-            -t ${{ env.REGISTRY }}/${{ github.repository }}/nginx:${{ env.MAJOR }} \
-            -t ${{ env.REGISTRY }}/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }} \
-            -t ${{ env.REGISTRY }}/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
-            ${{ env.REGISTRY }}/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
-            ${{ env.REGISTRY }}/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64
+            -t cr.waldbillig.io/${{ github.repository }}/nginx:${{ env.NGINX_TAG }} \
+            -t cr.waldbillig.io/${{ github.repository }}/nginx:${{ env.MAJOR }} \
+            -t cr.waldbillig.io/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }} \
+            -t cr.waldbillig.io/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
+            cr.waldbillig.io/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
+            cr.waldbillig.io/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64
 
