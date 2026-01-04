@@ -118,10 +118,10 @@ jobs:
       - name: Create multiarch manifests - registry
         run: |
           docker buildx imagetools create \
-            -t c${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/nginx:${{ env.NGINX_TAG }} \
-            -t c${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/nginx:${{ env.MAJOR }} \
-            -t c${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }} \
-            -t c${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
-            c${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
-            c${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/nginx:${{ env.NGINX_TAG }} \
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/nginx:${{ env.MAJOR }} \
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }} \
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
+            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
+            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64
 
