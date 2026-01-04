@@ -1,6 +1,6 @@
 FROM nginx:1.29-bookworm
 LABEL maintainer="Christian WALDBILLIG <christian@waldbillig.io>"
-LABEL org.opencontainers.image.source="https://github.com/chrecht/docker-library"
+LABEL org.opencontainers.image.source="https://git.waldbillig.io/chrecht/docker-library"
 
 #####################################
 # Base OS Update
