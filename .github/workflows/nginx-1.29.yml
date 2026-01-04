@@ -65,7 +65,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            cr.waldbillig.io/${{ github.repository }}/nginx
+            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}-nginx
           tags: |
             type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.arch }}
           flavor: |
@@ -75,7 +75,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.REGISTRY_HOST }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
+          username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_TOKEN }}
 
       - name: Build and push
@@ -112,16 +112,15 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.REGISTRY_HOST }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
+          username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_TOKEN }}
 
       - name: Create multiarch manifests - registry
         run: |
           docker buildx imagetools create \
-            -t cr.waldbillig.io/${{ github.repository }}/nginx:${{ env.NGINX_TAG }} \
-            -t cr.waldbillig.io/${{ github.repository }}/nginx:${{ env.MAJOR }} \
-            -t cr.waldbillig.io/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }} \
-            -t cr.waldbillig.io/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
-            cr.waldbillig.io/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
-            cr.waldbillig.io/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64
-
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}-nginx:${{ env.NGINX_TAG }} \
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}-nginx:${{ env.MAJOR }} \
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}-nginx:${{ env.MAJOR }}.${{ env.MINOR }} \
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}-nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
+            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}-nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
+            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}-nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64
