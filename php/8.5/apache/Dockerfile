@@ -67,7 +67,6 @@ RUN apt-get update \
         php8.5-bz2 \
         php8.5-intl \
         php8.5-odbc \
-        php8.5-opcache \
         php8.5-soap \
         php8.5-dev \
         php-pear \
