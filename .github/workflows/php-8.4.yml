@@ -64,28 +64,20 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ secrets.REGISTRY1_BASE }}php
-            ${{ secrets.REGISTRY2_BASE }}php
+            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php
           tags: |
             type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-${{ matrix.arch }}
           flavor: |
             latest=false
 
 
-      - name: Login to Registry 1
+      - name: Login to Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.REGISTRY1_HOSTNAME }}
-          username: ${{ secrets.REGISTRY1_USERNAME }}
-          password: ${{ secrets.REGISTRY1_PASSWORD }}
+          registry: ${{ secrets.REGISTRY_HOST }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
 
-
-      - name: Login to Registry 2
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.REGISTRY2_HOSTNAME }}
-          username: ${{ secrets.REGISTRY2_USERNAME }}
-          password: ${{ secrets.REGISTRY2_PASSWORD }}
 
       - name: Build and push
         id: build-and-push
@@ -121,34 +113,18 @@ jobs:
 
     steps:
 
-      - name: Login to Registry 1
+      - name: Login to Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.REGISTRY1_HOSTNAME }}
-          username: ${{ secrets.REGISTRY1_USERNAME }}
-          password: ${{ secrets.REGISTRY1_PASSWORD }}
+          registry: ${{ secrets.REGISTRY_HOST }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
 
 
-      - name: Login to Registry 2
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.REGISTRY2_HOSTNAME }}
-          username: ${{ secrets.REGISTRY2_USERNAME }}
-          password: ${{ secrets.REGISTRY2_PASSWORD }}
-
-
-      - name: Create multiarch manifests - registry 1
+      - name: Create multiarch manifests - registry
         run: |
           docker buildx imagetools create \
-            -t ${{ secrets.REGISTRY1_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
-            -t ${{ secrets.REGISTRY1_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
-            ${{ secrets.REGISTRY1_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
-            ${{ secrets.REGISTRY1_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
-
-      - name: Create multiarch manifests - registry 2
-        run: |
-          docker buildx imagetools create \
-            -t ${{ secrets.REGISTRY2_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
-            -t ${{ secrets.REGISTRY2_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
-            ${{ secrets.REGISTRY2_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
-            ${{ secrets.REGISTRY2_BASE }}php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
+            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
+            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
+            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
