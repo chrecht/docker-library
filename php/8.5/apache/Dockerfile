@@ -101,22 +101,7 @@ RUN curl -O https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/de
     && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
 
 
-#####################################
-# MS ODBC Driver for SQL Server
-#####################################
-RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
-    && curl https://packages.microsoft.com/config/debian/12/prod.list > /etc/apt/sources.list.d/mssql-release.list \
-    && apt-get update \
-    && apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev  --no-install-recommends \
-    && apt-get autoremove -y \
-    && apt-get autoclean \
-    && apt-get clean \
-    && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
-
-RUN pecl install sqlsrv pdo_sqlsrv \
-    && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.5/mods-available/sqlsrv.ini \
-    && printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.5/mods-available/pdo_sqlsrv.ini \
-    && phpenmod -v 8.5 sqlsrv pdo_sqlsrv redis rdkafka yaml kafka \
+RUN phpenmod -v 8.5 redis rdkafka yaml kafka \
     && phpdismod -v 8.5 xdebug
 
 
