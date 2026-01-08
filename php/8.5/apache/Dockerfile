@@ -12,7 +12,6 @@ ENV TERM="xterm" \
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-
 #####################
 # Add User site
 #####################
@@ -22,12 +21,11 @@ RUN addgroup --gid 667 site \
  && chown site.site -R /var/www
 
 #####################
-# PHP from sury.org
-#####################
-
-RUN apt-get update \
-    && apt-get -y upgrade \
-    && apt-get install -y --no-install-recommends \
+RUN set -eux; \
+    \
+    apt-get update; \
+    apt-get -y upgrade; \
+    apt-get install -y --no-install-recommends \
         git \
         curl \
         wget \
@@ -50,16 +48,70 @@ RUN apt-get update \
         libicu-dev \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
+        libgmp-dev \
         libpng-dev \
         libwebp-dev \
         libxpm-dev \
+        libpq-dev \
+        libzip-dev \
         zlib1g-dev \
-        imagemagick libmagickwand-dev \
+        imagemagick \
+        libmagickwand-dev \
+        libmemcached-dev \
+        libssl-dev \
+    ; \
+    docker-php-ext-configure gd \
+        --enable-gd \
+        --with-webp \
+        --with-jpeg \
+        --with-xpm \
+        --with-freetype \
+    ; \
+    docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
+        bcmath \
+        gd \
+        exif \
+        gmp \
+        intl \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        pcntl \
+        sockets \
+        zip \
+    ; \
+    \
+    pecl update-channels; \
+    pecl install \
+        redis \
+        xdebug \
+        imagick \
+        memcached \
+    ; \
+    docker-php-ext-enable \
+        redis \
+        imagick \
+        memcached \
+    ; \
+    rm -rf /tmp/pear ~/.pearrc; \
+    apt-get autoremove -y; \
+    apt-get autoclean; \
+    apt-get clean; \
+    rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
+
+RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
+    && curl https://packages.microsoft.com/config/debian/13/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev  --no-install-recommends \
     && apt-get autoremove -y \
     && apt-get autoclean \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
 
+RUN pecl install sqlsrv pdo_sqlsrv \
+    && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.4/mods-available/sqlsrv.ini \
+    && printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.4/mods-available/pdo_sqlsrv.ini \
+    && docker-php-ext-enable sqlsrv pdo_sqlsrv \
 
 #####################################
 # FFMPEG & MediaInfo
@@ -89,23 +141,6 @@ RUN rm -rf /var/www/html \
     && mkdir -p /var/www/html \
     && chown site.site -R /var/www
 
-RUN set -eux; \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-            libmemcached-dev \
-            libssl-dev \
-            libzip-dev \
-            zlib1g-dev && \
-    printf "" | pecl install -D 'with-libmemcached-dir="/usr"' memcached && \
-    docker-php-ext-enable memcached && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN pecl install imagick && \
-    docker-php-ext-enable imagick && \
-    docker-php-ext-configure intl && \
-    docker-php-ext-install intl && \
-    docker-php-ext-configure gd --enable-gd --with-webp --with-jpeg --with-xpm --with-freetype && \
-    docker-php-ext-install gd exif
 
 RUN a2enmod remoteip rewrite headers setenvif
 
