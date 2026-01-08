@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim
+FROM php:8.5-apache-trixie
 LABEL maintainer="Christian WALDBILLIG <christian@waldbillig.io>"
 LABEL org.opencontainers.image.source="https://github.com/chrecht/docker-library"
 
@@ -32,7 +32,6 @@ RUN apt-get update \
         curl \
         wget \
         gnupg2 \
-        libzip4 \
         apt-transport-https \
         lsb-release \
         ca-certificates \
@@ -47,83 +46,66 @@ RUN apt-get update \
 		make \
 		pkg-config \
 		re2c \
-    && curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg \
-    && sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
-    && apt-get update \
-    && dpkg -l | grep php | tee packages.txt \
-    && apt-get install -y --no-install-recommends \
-        php8.5-intl \
-        php8.5-gd \
-        php8.5-cli \
-        php8.5-curl \
-        php8.5-pgsql \
-        php8.5-sqlite \
-        php8.5-mysql \
-        php8.5-zip \
-        php8.5-xml \
-        php8.5-mbstring \
-        php8.5-imagick \
-        php8.5-xdebug \
-        php8.5-bz2 \
-        php8.5-intl \
-        php8.5-odbc \
-        php8.5-soap \
-        php8.5-dev \
-        php-pear \
-        php8.5-redis \
-        php8.5-amqp \
-        php8.5-rdkafka \
-        php8.5-yaml \
-        php8.5-memcached \
-        libapache2-mod-php8.5 \
-        apache2 \
+        gpgv \
+        libicu-dev \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
+        libwebp-dev \
+        libxpm-dev \
+        zlib1g-dev \
+        imagemagick libmagickwand-dev \
     && apt-get autoremove -y \
     && apt-get autoclean \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
 
-RUN update-alternatives --set php /usr/bin/php8.5 \
-    && update-alternatives --set php-config /usr/bin/php-config8.5 \
-    && update-alternatives --set phpize /usr/bin/phpize8.5
 
 #####################################
 # FFMPEG & MediaInfo
 #####################################
 RUN curl -O https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-multimedia-keyring_2024.9.1_all.deb \
     && dpkg -i deb-multimedia-keyring_2024.9.1_all.deb \
-    && echo "deb http://www.deb-multimedia.org bookworm main non-free" >> /etc/apt/sources.list \
-    && echo "deb http://www.deb-multimedia.org bookworm-backports main" >> /etc/apt/sources.list \
+    && echo "deb http://www.deb-multimedia.org trixie main non-free" >> /etc/apt/sources.list \
+    && echo "deb http://www.deb-multimedia.org trixie-backports main" >> /etc/apt/sources.list \
     && apt-get update && apt-get install -y zip unzip wget imagemagick --no-install-recommends \
-    && apt-get install -t bookworm-backports -y ffmpeg mediainfo --no-install-recommends \
+    && apt-get install -t trixie-backports -y ffmpeg mediainfo --no-install-recommends \
     && apt-get autoremove -y \
     && apt-get autoclean \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
 
 
-RUN phpenmod -v 8.5 redis rdkafka yaml kafka \
-    && phpdismod -v 8.5 xdebug
-
-
-RUN ln -sfT /dev/stderr "/var/log/apache2/error.log"; \
-	ln -sfT /dev/stdout "/var/log/apache2/access.log"; \
-	ln -sfT /dev/stdout "/var/log/apache2/other_vhosts_access.log"; \
-	chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "/var/log/apache2"; \
-    chown -R --no-dereference "$APACHE_RUN_USER:$APACHE_RUN_GROUP" "/var/run/apache2"; \
-    a2dismod mpm_event && a2enmod mpm_prefork
-
 COPY scripts/* /usr/local/bin/
-COPY php/conf.d/* /etc/php/8.5/apache2/conf.d/
-COPY php/conf.d/* /etc/php/8.5/cli/conf.d/
+COPY php/conf.d/* /usr/local/etc/php/conf.d/
+
 COPY apache2/mods-enabled/* /etc/apache2/mods-enabled/
 COPY apache2/conf-enabled/* /etc/apache2/conf-enabled/
 COPY apache2/sites-enabled/* /etc/apache2/sites-enabled/
+
 
 # cleanup /var/www/html folder
 RUN rm -rf /var/www/html \
     && mkdir -p /var/www/html \
     && chown site.site -R /var/www
 
+RUN set -eux; \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+            libmemcached-dev \
+            libssl-dev \
+            libzip-dev \
+            zlib1g-dev && \
+    printf "" | pecl install -D 'with-libmemcached-dir="/usr"' memcached && \
+    docker-php-ext-enable memcached && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pecl install imagick && \
+    docker-php-ext-enable imagick && \
+    docker-php-ext-configure intl && \
+    docker-php-ext-install intl && \
+    docker-php-ext-configure gd --enable-gd --with-webp --with-jpeg --with-xpm --with-freetype && \
+    docker-php-ext-install gd exif
 
 RUN a2enmod remoteip rewrite headers setenvif
 
@@ -134,5 +116,4 @@ RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2
 
 USER site
 
-EXPOSE 80
-CMD ["run.sh"]
+
