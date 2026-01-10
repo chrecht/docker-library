@@ -1,4 +1,4 @@
-FROM node:20-trixie
+FROM node:24-trixie
 LABEL maintainer="Christian WALDBILLIG <christian@waldbillig.io>"
 LABEL org.opencontainers.image.source="https://github.com/chrecht/docker-library"
 
