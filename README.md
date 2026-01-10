@@ -13,3 +13,5 @@
 [![node 20](https://github.com/chrecht/docker-library/actions/workflows/node-20.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/node-20.yml)
 [![node 22](https://github.com/chrecht/docker-library/actions/workflows/node-22.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/node-22.yml)
 [![node 24](https://github.com/chrecht/docker-library/actions/workflows/node-24.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/node-24.yml)
+
+[![github actions runner](https://github.com/chrecht/docker-library/actions/workflows/github-actions-runner.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/github-actions-runner.yml)
