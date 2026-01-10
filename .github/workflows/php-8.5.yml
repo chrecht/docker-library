@@ -71,7 +71,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php
+            ghcr.io/${{ github.repository }}/php
           tags: |
             type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-${{ matrix.arch }}
           flavor: |
@@ -81,9 +81,9 @@ jobs:
       - name: Login to Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.REGISTRY_HOST }}
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
 
       - name: Build and push
@@ -126,24 +126,24 @@ jobs:
       - name: Login to Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.REGISTRY_HOST }}
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
 
       - name: Create multiarch manifests - registry
         run: |
           docker buildx imagetools create \
-            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
-            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
-            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64
+            -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
+            -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
+            ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64
 
 
       # - name: Create multiarch manifests - registry
       #   run: |
       #     docker buildx imagetools create \
-      #       -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
-      #       -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
-      #       ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
-      #       ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
+      #       -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
+      #       -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
+      #       ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
+      #       ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
 
