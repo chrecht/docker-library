@@ -5,8 +5,9 @@
 [![PHP 8.5](https://github.com/chrecht/docker-library/actions/workflows/php-8.5.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/php-8.5.yml)
 
 
-[![nginx 1.27 - mainline](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.27.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.27.yml)
-[![nginx 1.28 - stable](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.28.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.28.yml)
+[![nginx 1.27](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.27.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.27.yml)
+[![nginx 1.28](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.28.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.28.yml)
+[![nginx 1.29](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.29.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/nginx-1.29.yml)
 
 [![node 18](https://github.com/chrecht/docker-library/actions/workflows/node-18.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/node-18.yml)
 [![node 20](https://github.com/chrecht/docker-library/actions/workflows/node-20.yml/badge.svg)](https://github.com/chrecht/docker-library/actions/workflows/node-20.yml)
