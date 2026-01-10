@@ -1,0 +1,19 @@
+
+
+services:
+
+  frankenphp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "2019:2019" # FrankenPHP admin port
+      - "8080:80"
+    environment:
+      CADDY_GLOBAL_OPTIONS: |
+        servers {
+          trusted_proxies static private_ranges
+          trusted_proxies_strict
+        }
+    volumes:
+      - ./html:/var/www/html
