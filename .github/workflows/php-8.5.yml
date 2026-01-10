@@ -39,7 +39,7 @@ jobs:
       matrix:
         #variant: ["apache", "cli", "fpm"]
         variant: ["apache"]
-        arch: ["amd64", "arm64"]
+        arch: ["amd64"]
 
     runs-on: ubuntu-latest
 
@@ -128,5 +128,13 @@ jobs:
           docker buildx imagetools create \
             -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
             -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
-            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
-            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
+            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64
+
+      # - name: Create multiarch manifests - registry
+      #   run: |
+      #     docker buildx imagetools create \
+      #       -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
+      #       -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
+      #       ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
+      #       ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
+
