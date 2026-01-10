@@ -108,3 +108,6 @@ RUN chown ${USER}:${GROUP} -R /etc/apache2/sites-enabled/*
 RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2
 
 USER ${USER}
+
+EXPOSE 80
+CMD ["run.sh"]

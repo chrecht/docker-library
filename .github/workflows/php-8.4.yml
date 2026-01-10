@@ -1,46 +1,60 @@
 name: PHP 8.4
 
 on:
-  push:
-    tags:
-      - "v8.4.*"
   workflow_dispatch:
 
 env:
-  PHP_MAJOR_VERSION: 8.4
-
+  PHP_MAJOR_VERSION: "8.4"
+  PHP_OS_CODENAME: "trixie"
 
 jobs:
+
   latest-version:
+    
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        variant: ["apache", "cli"]
+    
     outputs:
       VERSION: ${{ steps.get_version.outputs.VERSION }}
       MAJOR: ${{ steps.get_version.outputs.MAJOR }}
       MINOR: ${{ steps.get_version.outputs.MINOR }}
       PATCH: ${{ steps.get_version.outputs.PATCH }}
-    runs-on: ubuntu-latest
+
     steps:
       - name: Get version
         id: get_version
         run: |
-          latest=$(curl --silent https://packages.sury.org/php/dists/bullseye/main/binary-amd64/Packages | grep "Package: libapache2-mod-php${PHP_MAJOR_VERSION}$" -A 5 | grep Version | sed -En  's/^Version: ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
-          ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+/\1/p')
-          ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+/\1/p')
-          ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/p')
+          latest=$(curl -s "https://hub.docker.com/v2/repositories/library/php/tags?page_size=100&name=${{ env.PHP_MAJOR_VERSION }}." | jq -r '.results|.[]|.name' | grep -E "^${{ env.PHP_MAJOR_VERSION }}.[0-9]+-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}$" | sort -V | tail -1)
+          ver_full=$(echo $latest | sed -En 's/^([0-9]+\.[0-9]+\.[0-9]+)-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}/\1/p')
+          ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}/\1/p')
+          ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}/\1/p')
+          ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}/\1/p')
 
-          echo "VERSION=$latest" >> $GITHUB_OUTPUT
+          echo "VERSION=$ver_full" >> $GITHUB_OUTPUT
           echo "MAJOR=$ver_major" >> $GITHUB_OUTPUT
           echo "MINOR=$ver_minor" >> $GITHUB_OUTPUT
           echo "PATCH=$ver_patch" >> $GITHUB_OUTPUT
+
 
   build:
     needs: latest-version
 
     strategy:
       matrix:
-        variant: ["apache", "cli", "fpm"]
+        variant: ["apache", "cli"]
         arch: ["amd64", "arm64"]
+        include:
+        - platform: linux/amd64
+          runner: ubuntu-latest
+          arch: amd64
+        - platform: linux/arm64
+          runner: ubuntu-24.04-arm
+          arch: arm64
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
 
     env:
       VERSION: ${{ needs.latest-version.outputs.VERSION }}
@@ -64,7 +78,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php
+            ghcr.io/${{ github.repository }}/php
           tags: |
             type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-${{ matrix.arch }}
           flavor: |
@@ -74,16 +88,16 @@ jobs:
       - name: Login to Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.REGISTRY_HOST }}
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
 
       - name: Build and push
         id: build-and-push
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/${{ matrix.arch }}
+          platforms: ${{ matrix.platform }}
           context: ./php/${{ env.PHP_MAJOR_VERSION }}/${{ matrix.variant }}
           file: ./php/${{ env.PHP_MAJOR_VERSION }}/${{ matrix.variant }}/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
@@ -92,14 +106,17 @@ jobs:
           cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-php-${{ env.VERSION }}-${{ matrix.arch }}-${{ matrix.variant }}
           cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-php-${{ env.VERSION }}-${{ matrix.arch }}-${{ matrix.variant }}
 
+
+
   create-multiarch-manifests:
+
     needs: ["latest-version", "build"]
+    
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        variant: ["apache", "cli", "fpm"]
-
-    runs-on: ubuntu-latest
+        variant: ["apache", "cli"]
 
     env:
       VERSION: ${{ needs.latest-version.outputs.VERSION }}
@@ -116,15 +133,19 @@ jobs:
       - name: Login to Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.REGISTRY_HOST }}
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
 
       - name: Create multiarch manifests - registry
         run: |
+          docker pull --platform=linux/arm64 ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
+          docker pull --platform=linux/amd64 ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64
+
           docker buildx imagetools create \
-            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
-            -t ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
-            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
-            ${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
+            -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
+            -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
+            ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
+            ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
+

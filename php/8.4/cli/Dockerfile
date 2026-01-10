@@ -1,7 +1,11 @@
-FROM debian:bookworm-slim
+FROM php:8.4-cli-trixie
 LABEL maintainer="Christian WALDBILLIG <christian@waldbillig.io>"
 LABEL org.opencontainers.image.source="https://github.com/chrecht/docker-library"
 
+ARG USER=site
+ARG GROUP=site
+ARG UID=667
+ARG GID=667
 
 ENV TERM="xterm" \
     LANG="C.UTF-8" \
@@ -14,112 +18,83 @@ ARG DEBIAN_FRONTEND=noninteractive
 #####################
 # Add User site
 #####################
-RUN addgroup --gid 667 site \
- && adduser --disabled-password --gecos '' --home /var/www --shell "/sbin/nologin" --uid 667 --gid 667 site \
+RUN addgroup --gid ${GID} ${GROUP} \
+ && adduser --disabled-password --gecos '' --home /var/www --shell "/sbin/nologin" --uid ${UID} --gid ${GID} ${USER} \
  && mkdir -p /var/www/html \
- && chown site.site -R /var/www
+ && chown ${USER}:${GROUP} -R /var/www 
 
-#####################
-# PHP from sury.org
-#####################
+#####################################
+# Base Dependencies Installation
+#####################################
+RUN set -eux; \
+    \
+    apt-get update; \
+    apt-get -y upgrade; \
+    apt-get install -y --no-install-recommends ca-certificates libcap2-bin; \
+	curl -sSLf \
+        -o /usr/local/bin/install-php-extensions \
+		https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions; \
+	chmod +x /usr/local/bin/install-php-extensions
 
-RUN apt-get update \
-    && apt-get -y upgrade \
-    && apt-get install -y --no-install-recommends \
-        git \
-        curl \
-        wget \
-        gnupg2 \
-        libzip4 \
-        apt-transport-https \
-        lsb-release \
-        ca-certificates \
-        unzip \
-        libcap2-bin \
-        autoconf \
-		dpkg-dev \
-		file \
-		g++ \
-		gcc \
-		libc-dev \
-		make \
-		pkg-config \
-		re2c \
-    && curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg \
-    && sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-        php8.4-intl \
-        php8.4-gd \
-        php8.4-cli \
-        php8.4-curl \
-        php8.4-pgsql \
-        php8.4-sqlite \
-        php8.4-mysql \
-        php8.4-zip \
-        php8.4-xml \
-        php8.4-mbstring \
-        php8.4-imagick \
-        php8.4-xdebug \
-        php8.4-bz2 \
-        php8.4-intl \
-        php8.4-odbc \
-        php8.4-opcache \
-        php8.4-soap \
-        php8.4-dev \
-        php-pear \
-        php8.4-redis \
-        php8.4-amqp \
-        php8.4-rdkafka \
-        php8.4-yaml \
-        php8.4-memcached \
-    && apt-get autoremove -y \
-    && apt-get autoclean \
-    && apt-get clean \
-    && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
-
-RUN update-alternatives --set php /usr/bin/php8.4 \
-    && update-alternatives --set php-config /usr/bin/php-config8.4 \
-    && update-alternatives --set phpize /usr/bin/phpize8.4
+RUN install-php-extensions \
+        amqp \
+        bcmath \
+        bz2 \
+        calendar \
+        exif \
+        ftp \
+        gd \
+        gettext \
+        gmp \
+        igbinary \
+        imagick \
+        intl \
+        memcached \
+        msgpack \
+        mysqli \
+        pcntl \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        pgsql \
+        redis \
+        shmop \
+        soap \
+        sockets \
+        sysvmsg \
+        sysvsem \
+        sysvshm \
+        xdebug \
+        xml \
+        yaml \
+        zip
 
 #####################################
 # FFMPEG & MediaInfo
 #####################################
-RUN curl -O https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-multimedia-keyring_2024.9.1_all.deb \
+RUN apt-get update && apt-get install -y gpgv --no-install-recommends \
+    && curl -O https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-multimedia-keyring_2024.9.1_all.deb \
     && dpkg -i deb-multimedia-keyring_2024.9.1_all.deb \
-    && echo "deb http://www.deb-multimedia.org bookworm main non-free" >> /etc/apt/sources.list \
-    && echo "deb http://www.deb-multimedia.org bookworm-backports main" >> /etc/apt/sources.list \
+    && echo "deb http://www.deb-multimedia.org trixie main non-free" >> /etc/apt/sources.list \
+    && echo "deb http://www.deb-multimedia.org trixie-backports main" >> /etc/apt/sources.list \
     && apt-get update && apt-get install -y zip unzip wget imagemagick --no-install-recommends \
-    && apt-get install -t bookworm-backports -y ffmpeg mediainfo --no-install-recommends \
+    && apt-get install -t trixie-backports -y ffmpeg mediainfo --no-install-recommends \
     && apt-get autoremove -y \
     && apt-get autoclean \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
-
-
-#####################################
-# MS ODBC Driver for SQL Server
-#####################################
-RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
-    && curl https://packages.microsoft.com/config/debian/12/prod.list > /etc/apt/sources.list.d/mssql-release.list \
-    && apt-get update \
-    && apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev --no-install-recommends \
-    && apt-get autoremove -y \
-    && apt-get autoclean \
-    && apt-get clean \
-    && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
-
-RUN pecl install sqlsrv pdo_sqlsrv \
-    && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.4/mods-available/sqlsrv.ini \
-    && printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.4/mods-available/pdo_sqlsrv.ini \
-    && phpenmod -v 8.4 sqlsrv pdo_sqlsrv redis rdkafka yaml kafka \
-    && phpdismod -v 8.4 xdebug
-
 
 COPY scripts/* /usr/local/bin/
-COPY php/conf.d/* /etc/php/8.4/cli/conf.d/
+COPY php/conf.d/* /usr/local/etc/php/conf.d/
 
-USER site
+# cleanup /var/www/html folder
+RUN rm -rf /var/www/html \
+    && mkdir -p /var/www/html \
+    && chown ${USER}:${GROUP} -R /var/www \
+    && rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+
+USER ${USER}
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["php", "-a"]
