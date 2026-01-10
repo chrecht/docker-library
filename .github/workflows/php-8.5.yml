@@ -45,6 +45,7 @@ jobs:
     strategy:
       matrix:
         variant: ["apache", "cli"]
+        arch: ["amd64", "arm64"]
         include:
         - platform: linux/amd64
           runner: ubuntu-latest
