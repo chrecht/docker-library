@@ -140,8 +140,12 @@ jobs:
 
       - name: Create multiarch manifests - registry
         run: |
+          docker pull ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
+          docker pull ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64
+          
           docker buildx imagetools create \
             -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
             -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
             ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64
             ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
+
