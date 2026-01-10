@@ -20,7 +20,24 @@ RUN addgroup --gid 667 site \
  && mkdir -p /var/www/html \
  && chown site.site -R /var/www
 
-#####################
+#####################################
+# FFMPEG & MediaInfo
+#####################################
+RUN apt-get update && apt-get install -y gpgv --no-install-recommends \
+    && curl -O https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-multimedia-keyring_2024.9.1_all.deb \
+    && dpkg -i deb-multimedia-keyring_2024.9.1_all.deb \
+    && echo "deb http://www.deb-multimedia.org trixie main non-free" >> /etc/apt/sources.list \
+    && echo "deb http://www.deb-multimedia.org trixie-backports main" >> /etc/apt/sources.list \
+    && apt-get update && apt-get install -y zip unzip wget imagemagick --no-install-recommends \
+    && apt-get install -t trixie-backports -y ffmpeg mediainfo --no-install-recommends \
+    && apt-get autoremove -y \
+    && apt-get autoclean \
+    && apt-get clean \
+    && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
+
+#####################################
+# Base Dependencies Installation
+#####################################
 RUN set -eux; \
     \
     apt-get update; \
@@ -44,7 +61,6 @@ RUN set -eux; \
 		make \
 		pkg-config \
 		re2c \
-        gpgv \
         libicu-dev \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
@@ -59,14 +75,29 @@ RUN set -eux; \
         libmagickwand-dev \
         libmemcached-dev \
         libssl-dev \
-    ; \
+        bzip2 \
+        librabbitmq-dev \
+        libyaml-dev \
+        libreadline-dev \
+        libsasl2-dev \
+        libmsgpack-dev
+
+
+
+#####################################
+# PHP Extensions Installation
+#####################################
+RUN set -eux; \
+    \
     docker-php-ext-configure gd \
         --enable-gd \
         --with-webp \
         --with-jpeg \
         --with-xpm \
-        --with-freetype \
-    ; \
+        --with-freetype
+
+RUN set -eux; \
+    \
     docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
         bcmath \
         gd \
@@ -79,18 +110,50 @@ RUN set -eux; \
         pcntl \
         sockets \
         zip \
-    ; \
+        bz2 \
+        soap \
+        mysqli \
+        pgsql \
+        ftp \
+        calendar \
+        gettext \
+        shmop \
+        sysvmsg \
+        sysvsem \
+        sysvshm \
+        xml
+
+RUN set -eux; \
     \
     pecl update-channels; \
     pecl install \
         redis \
         xdebug \
         imagick \
-        memcached \
-    ; \
+        amqp \
+        igbinary \
+        msgpack \
+        yaml
+
+RUN set -eux; \
+    \
+    pecl download memcached; \
+    tar xf memcached-*.tgz; \
+    cd memcached-*; \
+    phpize; \
+    ./configure  --enable-memcached-msgpack=yes --enable-memcached-igbinary=yes --enable-memcached-json=yes --enable-memcached-sasl=yes --enable-memcached-session=yes; \
+    make -j"$(getconf _NPROCESSORS_ONLN)"; \
+    make install
+
+RUN set -eux; \
+    \
     docker-php-ext-enable \
         redis \
         imagick \
+        amqp \
+        igbinary \
+        msgpack \
+        yaml \
         memcached \
     ; \
     rm -rf /tmp/pear ~/.pearrc; \
@@ -98,34 +161,6 @@ RUN set -eux; \
     apt-get autoclean; \
     apt-get clean; \
     rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
-
-RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
-    && curl https://packages.microsoft.com/config/debian/13/prod.list > /etc/apt/sources.list.d/mssql-release.list \
-    && apt-get update \
-    && apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev  --no-install-recommends \
-    && apt-get autoremove -y \
-    && apt-get autoclean \
-    && apt-get clean \
-    && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
-
-RUN pecl install sqlsrv pdo_sqlsrv \
-    && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.4/mods-available/sqlsrv.ini \
-    && printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.4/mods-available/pdo_sqlsrv.ini \
-    && docker-php-ext-enable sqlsrv pdo_sqlsrv \
-
-#####################################
-# FFMPEG & MediaInfo
-#####################################
-RUN curl -O https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-multimedia-keyring_2024.9.1_all.deb \
-    && dpkg -i deb-multimedia-keyring_2024.9.1_all.deb \
-    && echo "deb http://www.deb-multimedia.org trixie main non-free" >> /etc/apt/sources.list \
-    && echo "deb http://www.deb-multimedia.org trixie-backports main" >> /etc/apt/sources.list \
-    && apt-get update && apt-get install -y zip unzip wget imagemagick --no-install-recommends \
-    && apt-get install -t trixie-backports -y ffmpeg mediainfo --no-install-recommends \
-    && apt-get autoremove -y \
-    && apt-get autoclean \
-    && apt-get clean \
-    && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
 
 
 COPY scripts/* /usr/local/bin/
