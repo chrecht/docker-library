@@ -3,18 +3,20 @@ LABEL maintainer="Christian WALDBILLIG <christian@waldbillig.io>"
 LABEL org.opencontainers.image.source="https://github.com/chrecht/docker-library"
 
 #####################################
-# Base OS Update, install FFMPEG & MediaInfo
+# Base OS Update, FFMPEG & MediaInfo
 #####################################
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get dist-upgrade -y \
+    && apt-get install -y gpgv --no-install-recommends \
     && curl -O https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-multimedia-keyring_2024.9.1_all.deb \
     && dpkg -i deb-multimedia-keyring_2024.9.1_all.deb \
     && echo "deb http://www.deb-multimedia.org trixie main non-free" >> /etc/apt/sources.list \
     && echo "deb http://www.deb-multimedia.org trixie-backports main" >> /etc/apt/sources.list \
     && apt-get update && apt-get install -y zip unzip wget imagemagick --no-install-recommends \
-    && apt-get install -t trixie-backports -y ffmpeg mediainfo  --no-install-recommends \
+    && apt-get install -t trixie-backports -y ffmpeg mediainfo --no-install-recommends \
     && apt-get autoremove -y \
     && apt-get autoclean \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
+
