@@ -23,7 +23,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN addgroup --gid ${GID} ${GROUP} \
  && adduser --disabled-password --gecos '' --home /var/www --shell "/sbin/nologin" --uid ${UID} --gid ${GID} ${USER} \
  && mkdir -p /var/www/html \
- && chown ${USER}.${GROUP} -R /var/www 
+ && chown ${USER}:${GROUP} -R /var/www 
 
 #####################################
 # Base Dependencies Installation
