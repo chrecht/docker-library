@@ -45,9 +45,15 @@ jobs:
     strategy:
       matrix:
         variant: ["apache", "cli"]
-        arch: ["amd64"]
+        include:
+        - platform: linux/amd64
+          runner: ubuntu-latest
+          arch: amd64
+        - platform: linux/arm64
+          runner: ubuntu-24.04-arm
+          arch: arm64
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
 
     env:
       VERSION: ${{ needs.latest-version.outputs.VERSION }}
@@ -90,7 +96,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/${{ matrix.arch }}
+          platforms: ${{ matrix.platform }}
           context: ./php/${{ env.PHP_MAJOR_VERSION }}/${{ matrix.variant }}
           file: ./php/${{ env.PHP_MAJOR_VERSION }}/${{ matrix.variant }}/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
@@ -137,13 +143,4 @@ jobs:
             -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
             -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
             ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64
-
-
-      # - name: Create multiarch manifests - registry
-      #   run: |
-      #     docker buildx imagetools create \
-      #       -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }} \
-      #       -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }} \
-      #       ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
-      #       ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
-
+            ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
