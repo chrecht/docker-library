@@ -80,24 +80,15 @@ RUN set -eux; \
         libyaml-dev \
         libreadline-dev \
         libsasl2-dev \
-        libmsgpack-dev
-
-
-
-#####################################
-# PHP Extensions Installation
-#####################################
-RUN set -eux; \
-    \
+        libmsgpack-dev \
+    ; \
     docker-php-ext-configure gd \
         --enable-gd \
         --with-webp \
         --with-jpeg \
         --with-xpm \
-        --with-freetype
-
-RUN set -eux; \
-    \
+        --with-freetype \
+    ; \
     docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
         bcmath \
         gd \
@@ -121,10 +112,8 @@ RUN set -eux; \
         sysvmsg \
         sysvsem \
         sysvshm \
-        xml
-
-RUN set -eux; \
-    \
+        xml \
+    ; \
     pecl update-channels; \
     pecl install \
         redis \
@@ -133,20 +122,16 @@ RUN set -eux; \
         amqp \
         igbinary \
         msgpack \
-        yaml
-
-RUN set -eux; \
-    \
+        yaml \
+    ; \
     pecl download memcached; \
-    tar xf memcached-*.tgz; \
-    cd memcached-*; \
-    phpize; \
-    ./configure  --enable-memcached-msgpack=yes --enable-memcached-igbinary=yes --enable-memcached-json=yes --enable-memcached-sasl=yes --enable-memcached-session=yes; \
-    make -j"$(getconf _NPROCESSORS_ONLN)"; \
-    make install
-
-RUN set -eux; \
-    \
+        tar xf memcached-*.tgz; \
+        cd memcached-*; \
+        phpize; \
+        ./configure  --enable-memcached-msgpack=yes --enable-memcached-igbinary=yes --enable-memcached-json=yes --enable-memcached-sasl=yes --enable-memcached-session=yes; \
+        make -j"$(getconf _NPROCESSORS_ONLN)"; \
+        make install \
+    ; \
     docker-php-ext-enable \
         redis \
         imagick \
@@ -174,12 +159,12 @@ COPY apache2/sites-enabled/* /etc/apache2/sites-enabled/
 # cleanup /var/www/html folder
 RUN rm -rf /var/www/html \
     && mkdir -p /var/www/html \
-    && chown site.site -R /var/www
+    && chown site:site -R /var/www
 
 
 RUN a2enmod remoteip rewrite headers setenvif
 
-RUN chown site.site -R /etc/apache2/sites-enabled/*
+RUN chown site:site -R /etc/apache2/sites-enabled/*
 
 ## allow apache to use port 80
 RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2
