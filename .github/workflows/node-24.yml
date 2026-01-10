@@ -1,10 +1,10 @@
-name: node 20
+name: node 24
 
 on:
   workflow_dispatch:
 
 env:
-  MAJOR_VERSION: 20
+  MAJOR_VERSION: 24
 
 
 jobs:
