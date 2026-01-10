@@ -5,13 +5,17 @@ on:
 
 env:
   PHP_MAJOR_VERSION: "8.5"
-  PHP_BASE_OS: "debian-trixie"
+  PHP_OS_CODENAME: "trixie"
 
 jobs:
 
   latest-version:
     
     runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        variant: ["apache", "cli"]
     
     outputs:
       VERSION: ${{ steps.get_version.outputs.VERSION }}
@@ -23,10 +27,10 @@ jobs:
       - name: Get version
         id: get_version
         run: |
-          latest=$(curl -s "https://hub.docker.com/v2/repositories/library/php/tags?page_size=100&name=${{ env.PHP_MAJOR_VERSION }}." | jq -r '.results|.[]|.name' | grep -E "^${{ env.PHP_MAJOR_VERSION }}.[0-9]+-${{ env.PHP_BASE_OS }}$" | sort -V | tail -1)
-          ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+-${{ env.PHP_BASE_OS }}/\1/p')
-          ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+-${{ env.PHP_BASE_OS }}/\1/p')
-          ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)-${{ env.PHP_BASE_OS }}/\1/p')
+          latest=$(curl -s "https://hub.docker.com/v2/repositories/library/php/tags?page_size=100&name=${{ env.PHP_MAJOR_VERSION }}." | jq -r '.results|.[]|.name' | grep -E "^${{ env.PHP_MAJOR_VERSION }}.[0-9]+-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}$" | sort -V | tail -1)
+          ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}/\1/p')
+          ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}/\1/p')
+          ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}/\1/p')
 
           echo "VERSION=$latest" >> $GITHUB_OUTPUT
           echo "MAJOR=$ver_major" >> $GITHUB_OUTPUT
