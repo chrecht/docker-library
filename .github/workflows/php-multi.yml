@@ -1,4 +1,4 @@
-name: PHP 8.5
+name: PHP multi version
 
 on:
   workflow_dispatch:
