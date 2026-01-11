@@ -1,9 +1,8 @@
 name: nginx 1.28
 
 on:
-  push:
-    tags:
-      - "v1.28.*"
+  schedule:
+    - cron: "15 5 * * 1"
   workflow_dispatch:
 
 env:

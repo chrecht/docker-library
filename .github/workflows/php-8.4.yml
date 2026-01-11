@@ -1,6 +1,8 @@
 name: PHP 8.4
 
 on:
+  schedule:
+    - cron: "15 5 * * 1"
   workflow_dispatch:
 
 env:

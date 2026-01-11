@@ -1,6 +1,8 @@
 name: node 22
 
 on:
+  schedule:
+    - cron: "15 5 * * 1"
   workflow_dispatch:
 
 env:
