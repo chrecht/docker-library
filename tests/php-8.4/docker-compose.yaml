@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-apache
-      target: dev
+      target: prod
     ports:
       - "8081:80"
     volumes:
