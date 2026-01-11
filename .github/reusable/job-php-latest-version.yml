@@ -1,0 +1,43 @@
+
+name: PHP get latest version
+
+on:
+  workflow_call:    
+    inputs:
+      PHP_MAJOR_VERSION:
+        required: true
+        type: string
+      PHP_OS_CODENAME:
+        required: true
+        type: string
+
+jobs:
+  
+  latest-version:
+
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        variant: ["apache", "cli"]
+    
+    outputs:
+      VERSION: ${{ steps.get_version.outputs.VERSION }}
+      MAJOR: ${{ steps.get_version.outputs.MAJOR }}
+      MINOR: ${{ steps.get_version.outputs.MINOR }}
+      PATCH: ${{ steps.get_version.outputs.PATCH }}
+
+    steps:
+      - name: Get version
+        id: get_version
+        run: |
+          latest=$(curl -s "https://hub.docker.com/v2/repositories/library/php/tags?page_size=100&name=${{ env.PHP_MAJOR_VERSION }}." | jq -r '.results|.[]|.name' | grep -E "^${{ env.PHP_MAJOR_VERSION }}.[0-9]+-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}$" | sort -V | tail -1)
+          ver_full=$(echo $latest | sed -En 's/^([0-9]+\.[0-9]+\.[0-9]+)-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}/\1/p')
+          ver_major=$(echo $latest | sed -En 's/^([0-9]+)\.[0-9]+\.[0-9]+-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}/\1/p')
+          ver_minor=$(echo $latest | sed -En 's/^[0-9]+\.([0-9]+)\.[0-9]+-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}/\1/p')
+          ver_patch=$(echo $latest | sed -En 's/^[0-9]+\.[0-9]+\.([0-9]+)-${{ matrix.variant }}-${{ env.PHP_OS_CODENAME }}/\1/p')
+
+          echo "VERSION=$ver_full" >> $GITHUB_OUTPUT
+          echo "MAJOR=$ver_major" >> $GITHUB_OUTPUT
+          echo "MINOR=$ver_minor" >> $GITHUB_OUTPUT
+          echo "PATCH=$ver_patch" >> $GITHUB_OUTPUT
