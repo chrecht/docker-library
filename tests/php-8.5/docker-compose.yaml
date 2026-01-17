@@ -15,7 +15,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-apache
-      target: dev
+      target: prod
     command: ['php', '-f', '/var/www/html/index.php']
     environment:
       TESTENV: yes
@@ -26,7 +26,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-cli
-      target: dev
+      target: prod
     command: ['-f', '/var/www/html/index.php']
     environment:
       - TESTENV=yes

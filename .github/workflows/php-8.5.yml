@@ -162,7 +162,7 @@ jobs:
             ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
 
 
-  test:
+  smoke-tests:
     
     needs: ["latest-version", "create-multiarch-manifests"]
     
@@ -171,6 +171,17 @@ jobs:
     permissions:
       contents: read
       packages: read
+
+    strategy:
+      matrix:
+        arch: ["amd64", "arm64"]
+        include:
+        - platform: linux/amd64
+          runner: ubuntu-latest
+          arch: amd64
+        - platform: linux/arm64
+          runner: ubuntu-24.04-arm
+          arch: arm64
 
     env:
       VERSION: ${{ needs.latest-version.outputs.VERSION }}
@@ -204,6 +215,13 @@ jobs:
           echo "$response"
           echo "$response" | grep -q "PHP ${{ env.MAJOR }}.${{ env.MINOR }}"
           
+          # Test extensions are loaded
+          docker compose exec apache php -m | grep -q "mysqli"
+          docker compose exec apache php -m | grep -q "pdo_mysql"
+          docker compose exec apache php -m | grep -q "amqp"
+          docker compose exec apache php -m | grep -q "curl"
+          docker compose exec apache php -m | grep -q "intl"
+
           # Test Apache is serving PHP
           response=$(docker compose exec -T apache curl -s http://localhost/health/)
           echo "$response"
@@ -214,8 +232,15 @@ jobs:
       - name: Test CLI variant
         working-directory: ./tests/php-${{ env.PHP_MAJOR_VERSION }}
         run: |
+          # Test PHP version
           docker compose run --rm cli -v | grep -q "PHP ${{ env.MAJOR }}.${{ env.MINOR }}"
-          docker compose run --rm cli -m | grep -q "imagick"
+
+          # Test extensions are loaded
+          docker compose run --rm cli -m | grep -q "mysqli"
+          docker compose run --rm cli -m | grep -q "pdo_mysql"
+          docker compose run --rm cli -m | grep -q "amqp"
+          docker compose run --rm cli -m | grep -q "curl"
+          docker compose run --rm cli -m | grep -q "intl"
           docker compose run --rm cli -r "echo 'OK';" | grep -q "OK"
 
       - name: Cleanup
