@@ -32,7 +32,7 @@ RUN set -eux; \
     \
     apt-get update; \
     apt-get -y upgrade; \
-    apt-get install -y --no-install-recommends ca-certificates libcap2-bin; \
+    apt-get install -y --no-install-recommends ca-certificates libcap2-bin zip unzip wget imagemagick; \
 	curl -sSLf \
         -o /usr/local/bin/install-php-extensions \
 		https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions; \
@@ -79,7 +79,7 @@ RUN apt-get update && apt-get install -y gpgv --no-install-recommends \
     && dpkg -i deb-multimedia-keyring_2024.9.1_all.deb \
     && echo "deb http://www.deb-multimedia.org trixie main non-free" >> /etc/apt/sources.list \
     && echo "deb http://www.deb-multimedia.org trixie-backports main" >> /etc/apt/sources.list \
-    && apt-get update && apt-get install -y zip unzip wget imagemagick --no-install-recommends \
+    && apt-get update \
     && apt-get install -t trixie-backports -y ffmpeg mediainfo --no-install-recommends \
     && apt-get autoremove -y \
     && apt-get autoclean \
