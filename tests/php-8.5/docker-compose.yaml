@@ -1,0 +1,34 @@
+
+services:
+
+  apache:
+    build:
+      context: .
+      dockerfile: Dockerfile-apache
+      target: prod
+    ports:
+      - "8081:80"
+    volumes:
+      - ./html:/var/www/html
+
+  apache-cli:
+    build:
+      context: .
+      dockerfile: Dockerfile-apache
+      target: dev
+    command: ['php', '-f', '/var/www/html/index.php']
+    environment:
+      TESTENV: yes
+    volumes:
+      - ./html:/var/www/html
+
+  cli:
+    build:
+      context: .
+      dockerfile: Dockerfile-cli
+      target: dev
+    command: ['-f', '/var/www/html/index.php']
+    environment:
+      - TESTENV=yes
+    volumes:
+      - ./html:/var/www/html

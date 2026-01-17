@@ -161,3 +161,64 @@ jobs:
             ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-amd64 \
             ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
 
+
+  test:
+    
+    needs: ["latest-version", "create-multiarch-manifests"]
+    
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+
+    env:
+      VERSION: ${{ needs.latest-version.outputs.VERSION }}
+      MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
+      MINOR: ${{ needs.latest-version.outputs.MINOR }}
+      PATCH: ${{ needs.latest-version.outputs.PATCH }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test Apache variant
+        working-directory: ./tests/php-${{ env.PHP_MAJOR_VERSION }}
+        run: |
+          docker compose up apache -d
+          sleep 5
+          
+          # Test PHP is running
+          response=$(docker compose exec -T apache php -v)
+          echo "$response"
+          echo "$response" | grep -q "PHP ${{ env.MAJOR }}.${{ env.MINOR }}"
+          
+          # Test Apache is serving PHP
+          response=$(docker compose exec -T apache curl -s http://localhost/health/)
+          echo "$response"
+          [ "$response" = "OK" ]
+          
+          docker compose down
+
+      - name: Test CLI variant
+        working-directory: ./tests/php-${{ env.PHP_MAJOR_VERSION }}
+        run: |
+          docker compose run --rm cli -v | grep -q "PHP ${{ env.MAJOR }}.${{ env.MINOR }}"
+          docker compose run --rm cli -m | grep -q "imagick"
+          docker compose run --rm cli -r "echo 'OK';" | grep -q "OK"
+
+      - name: Cleanup
+        if: always()
+        working-directory: ./tests/php-${{ env.PHP_MAJOR_VERSION }}
+        run: docker compose down -v

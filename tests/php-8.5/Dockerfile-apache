@@ -1,0 +1,9 @@
+FROM ghcr.io/chrecht/docker-library/php:8.5-apache AS base
+
+FROM base as prod
+
+FROM base AS dev
+
+USER root
+RUN dev.sh
+USER site
