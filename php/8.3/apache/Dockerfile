@@ -33,6 +33,7 @@ RUN set -eux; \
     apt-get update; \
     apt-get -y upgrade; \
     apt-get install -y --no-install-recommends ca-certificates libcap2-bin zip unzip wget imagemagick; \
+    printf "Package: imagemagick* libmagick*\nPin: release o=Debian\nPin-Priority: 900\n" > /etc/apt/preferences.d/imagemagick; \
 	curl -sSLf \
         -o /usr/local/bin/install-php-extensions \
 		https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions; \
