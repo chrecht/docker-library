@@ -19,6 +19,8 @@ jobs:
       matrix:
         variant: ["apache", "cli"]
     
+    permissions: {}
+
     outputs:
       VERSION: ${{ steps.get_version.outputs.VERSION }}
       MAJOR: ${{ steps.get_version.outputs.MAJOR }}
@@ -43,6 +45,10 @@ jobs:
 
   build:
     needs: latest-version
+
+    permissions:
+      contents: read
+      packages: write
 
     strategy:
       matrix:
@@ -115,6 +121,10 @@ jobs:
     needs: ["latest-version", "build"]
     
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
 
     strategy:
       matrix:
