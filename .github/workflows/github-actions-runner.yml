@@ -25,6 +25,10 @@ jobs:
 
     runs-on: ${{ matrix.runner }}
 
+    permissions:
+      contents: read
+      packages: write
+
     defaults:
       run:
         shell: bash
@@ -86,6 +90,10 @@ jobs:
     needs: ["build"]
 
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
 
     defaults:
       run:
