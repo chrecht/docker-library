@@ -1,5 +1,7 @@
 FROM ghcr.io/actions/actions-runner:latest
 
+ARG TARGETARCH
+
 #####################################
 # Base OS Update
 #####################################
@@ -13,7 +15,7 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
 
-RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${TARGETARCH}/kubectl" && \
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
     rm -f kubectl
 
