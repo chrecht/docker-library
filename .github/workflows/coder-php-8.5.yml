@@ -1,4 +1,4 @@
-name: coder php 8.4
+name: coder php 8.5
 
 on:
   schedule:
@@ -57,7 +57,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/${{ github.repository }}/coder/php-8.4
+            ghcr.io/${{ github.repository }}/coder/php-8.5
           tags: |
             type=raw,value=${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
           flavor: |
@@ -75,15 +75,15 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/${{ matrix.arch }}
-          context: ./coder/php-8.4
-          file: ./coder/php-8.4/Dockerfile
+          context: ./coder/php-8.5
+          file: ./coder/php-8.5/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ghcr.io/${{ github.repository }}/coder/php-8.4:${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
-            ghcr.io/${{ github.repository }}/coder/php-8.4:${{ steps.build_datetime.outputs.datetime }}-${{ matrix.arch }}
+            ghcr.io/${{ github.repository }}/coder/php-8.5:${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
+            ghcr.io/${{ github.repository }}/coder/php-8.5:${{ steps.build_datetime.outputs.datetime }}-${{ matrix.arch }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-coder/php-8.4-${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-coder/php-8.4-${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-coder/php-8.5-${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-coder/php-8.5-${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
 
 
   create-multiarch-manifests:
@@ -111,9 +111,9 @@ jobs:
       - name: Create multiarch manifests - registry
         run: |
           docker buildx imagetools create \
-            -t ghcr.io/${{ github.repository }}/coder/php-8.4:${{ needs.build.outputs.GIT_HASH }} \
-            -t ghcr.io/${{ github.repository }}/coder/php-8.4:${{ needs.build.outputs.BUILD_DATETIME }} \
-            -t ghcr.io/${{ github.repository }}/coder/php-8.4:latest \
-            ghcr.io/${{ github.repository }}/coder/php-8.4:${{ needs.build.outputs.GIT_HASH }}-amd64 \
-            ghcr.io/${{ github.repository }}/coder/php-8.4:${{ needs.build.outputs.GIT_HASH }}-arm64
+            -t ghcr.io/${{ github.repository }}/coder/php-8.5:${{ needs.build.outputs.GIT_HASH }} \
+            -t ghcr.io/${{ github.repository }}/coder/php-8.5:${{ needs.build.outputs.BUILD_DATETIME }} \
+            -t ghcr.io/${{ github.repository }}/coder/php-8.5:latest \
+            ghcr.io/${{ github.repository }}/coder/php-8.5:${{ needs.build.outputs.GIT_HASH }}-amd64 \
+            ghcr.io/${{ github.repository }}/coder/php-8.5:${{ needs.build.outputs.GIT_HASH }}-arm64
 

@@ -19,7 +19,6 @@ RUN apt-get update \
         curl \
         wget \
         gnupg2 \
-        libzip4 \
         apt-transport-https \
         lsb-release \
         ca-certificates \
@@ -39,39 +38,38 @@ RUN apt-get update \
     && apt-get update \
     && dpkg -l | grep php | tee packages.txt \
     && apt-get install -y --no-install-recommends \
-        php8.4-intl \
-        php8.4-gd \
-        php8.4-cli \
-        php8.4-curl \
-        php8.4-pgsql \
-        php8.4-sqlite \
-        php8.4-mysql \
-        php8.4-zip \
-        php8.4-xml \
-        php8.4-mbstring \
-        php8.4-imagick \
-        php8.4-xdebug \
-        php8.4-bz2 \
-        php8.4-intl \
-        php8.4-odbc \
-        php8.4-opcache \
-        php8.4-soap \
-        php8.4-dev \
+        php8.5-intl \
+        php8.5-gd \
+        php8.5-cli \
+        php8.5-curl \
+        php8.5-pgsql \
+        php8.5-sqlite \
+        php8.5-mysql \
+        php8.5-zip \
+        php8.5-xml \
+        php8.5-mbstring \
+        php8.5-imagick \
+        php8.5-xdebug \
+        php8.5-bz2 \
+        php8.5-intl \
+        php8.5-odbc \
+        php8.5-soap \
+        php8.5-dev \
         php-pear \
-        php8.4-redis \
-        php8.4-amqp \
-        php8.4-rdkafka \
-        php8.4-yaml \
-        php8.4-memcached \
-        libapache2-mod-php8.4 \
+        php8.5-redis \
+        php8.5-amqp \
+        php8.5-rdkafka \
+        php8.5-yaml \
+        php8.5-memcached \
+        libapache2-mod-php8.5 \
         apache2 \
     && apt-get autoremove -y \
     && apt-get autoclean \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
 
-RUN update-alternatives --set php /usr/bin/php8.4 \
-    && update-alternatives --set php-config /usr/bin/php-config8.4 \
-    && update-alternatives --set phpize /usr/bin/phpize8.4
+RUN update-alternatives --set php /usr/bin/php8.5 \
+    && update-alternatives --set php-config /usr/bin/php-config8.5 \
+    && update-alternatives --set phpize /usr/bin/phpize8.5
 
 USER coder
