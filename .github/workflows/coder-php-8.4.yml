@@ -1,0 +1,119 @@
+name: coder php 8.4
+
+on:
+  schedule:
+    - cron: "15 5 * * 3"
+  workflow_dispatch:
+
+env:
+  NAN: 1
+
+jobs:
+
+  build:
+
+    strategy:
+      matrix:
+        arch: ["amd64", "arm64"]
+        include:
+        - platform: linux/amd64
+          runner: ubuntu-latest
+          arch: amd64
+        - platform: linux/arm64
+          runner: ubuntu-24.04-arm
+          arch: arm64
+
+    runs-on: ${{ matrix.runner }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    defaults:
+      run:
+        shell: bash
+
+    outputs:
+      GIT_HASH: ${{ steps.git_hash.outputs.hash }}
+      BUILD_DATETIME: ${{ steps.build_datetime.outputs.datetime }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get git commit hash
+        id: git_hash
+        run: echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Get build datetime
+        id: build_datetime
+        run: echo "datetime=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}/coder/php-8.4
+          tags: |
+            type=raw,value=${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
+          flavor: |
+            latest=false
+
+      - name: Login to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/${{ matrix.arch }}
+          context: ./coder/php-8.4
+          file: ./coder/php-8.4/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ghcr.io/${{ github.repository }}/coder/php-8.4:${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
+            ghcr.io/${{ github.repository }}/coder/php-8.4:${{ steps.build_datetime.outputs.datetime }}-${{ matrix.arch }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-coder/php-8.4-${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-coder/php-8.4-${{ steps.git_hash.outputs.hash }}-${{ matrix.arch }}
+
+
+  create-multiarch-manifests:
+    needs: ["build"]
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+
+      - name: Login to Registry 1
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create multiarch manifests - registry
+        run: |
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.repository }}/coder/php-8.4:${{ needs.build.outputs.GIT_HASH }} \
+            -t ghcr.io/${{ github.repository }}/coder/php-8.4:${{ needs.build.outputs.BUILD_DATETIME }} \
+            -t ghcr.io/${{ github.repository }}/coder/php-8.4:latest \
+            ghcr.io/${{ github.repository }}/coder/php-8.4:${{ needs.build.outputs.GIT_HASH }}-amd64 \
+            ghcr.io/${{ github.repository }}/coder/php-8.4:${{ needs.build.outputs.GIT_HASH }}-arm64
+
