@@ -162,6 +162,123 @@ jobs:
             ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-arm64
 
 
+  build-dev:
+    needs: ["latest-version", "create-multiarch-manifests"]
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        variant: ["apache", "cli"]
+        arch: ["amd64", "arm64"]
+        include:
+        - platform: linux/amd64
+          runner: ubuntu-latest
+          arch: amd64
+        - platform: linux/arm64
+          runner: ubuntu-24.04-arm
+          arch: arm64
+
+    runs-on: ${{ matrix.runner }}
+
+    env:
+      VERSION: ${{ needs.latest-version.outputs.VERSION }}
+      MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
+      MINOR: ${{ needs.latest-version.outputs.MINOR }}
+      PATCH: ${{ needs.latest-version.outputs.PATCH }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}/php
+          tags: |
+            type=raw,value=${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-dev-${{ matrix.arch }}
+          flavor: |
+            latest=false
+
+
+      - name: Login to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - name: Build and push
+        id: build-and-push
+        uses: docker/build-push-action@v6
+        with:
+          platforms: ${{ matrix.platform }}
+          context: ./php/${{ env.PHP_MAJOR_VERSION }}-dev/${{ matrix.variant }}
+          file: ./php/${{ env.PHP_MAJOR_VERSION }}-dev/${{ matrix.variant }}/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}-php-${{ env.VERSION }}-${{ matrix.arch }}-${{ matrix.variant }}-dev
+          cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}-php-${{ env.VERSION }}-${{ matrix.arch }}-${{ matrix.variant }}-dev
+
+  create-multiarch-manifests-dev:
+
+    needs: ["latest-version", "build-dev"]
+    
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        variant: ["apache", "cli"]
+
+    env:
+      VERSION: ${{ needs.latest-version.outputs.VERSION }}
+      MAJOR: ${{ needs.latest-version.outputs.MAJOR }}
+      MINOR: ${{ needs.latest-version.outputs.MINOR }}
+      PATCH: ${{ needs.latest-version.outputs.PATCH }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+
+      - name: Login to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - name: Create multiarch manifests - registry
+        run: |
+          docker pull --platform=linux/arm64 ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-dev-arm64
+          docker pull --platform=linux/amd64 ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-dev-amd64
+
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}-${{ matrix.variant }}-dev \
+            -t ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-dev \
+            ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-dev-amd64 \
+            ghcr.io/${{ github.repository }}/php:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.variant }}-dev-arm64
+
+
   smoke-tests:
     
     needs: ["latest-version", "create-multiarch-manifests"]
