@@ -28,7 +28,7 @@ jobs:
           while [ -n "$url" ] && [ "$url" != "null" ]; do
             response=$(curl -s "$url")
             all_tags="$all_tags
-$(echo "$response" | jq -r '.results[].name')"
+          $(echo "$response" | jq -r '.results[].name')"
             url=$(echo "$response" | jq -r '.next // empty')
           done
           latest=$(echo "$all_tags" | grep -E "^${NGINX_MAJOR_VERSION}.[0-9]+$" | sort -V | tail -1)
