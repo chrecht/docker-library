@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  NGINX_MAJOR_VERSION: 1.29
+  NGINX_MAJOR_VERSION: "1.29"
   NGINX_TAG: legacy-1.29
 
 jobs:

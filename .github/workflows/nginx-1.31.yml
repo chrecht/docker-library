@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  NGINX_MAJOR_VERSION: 1.31
+  NGINX_MAJOR_VERSION: "1.31"
   NGINX_TAG: mainline
 
 jobs:
