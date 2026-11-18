@@ -1,4 +1,4 @@
-name: nginx 1.27
+name: nginx 1.31
 
 on:
   schedule:
@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 env:
-  NGINX_MAJOR_VERSION: 1.27
-  NGINX_TAG: legacy-1.27
+  NGINX_MAJOR_VERSION: 1.31
+  NGINX_TAG: mainline
 
 jobs:
 
@@ -139,4 +139,3 @@ jobs:
             -t ghcr.io/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }} \
             ghcr.io/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-amd64 \
             ghcr.io/${{ github.repository }}/nginx:${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-arm64
-
